@@ -1,0 +1,91 @@
+###############################################################################
+# BEGIN build-stage
+# Compile the binary
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.21.6@sha256:5f5d61dcb58900bc57b230431b6367c900f9982b583adcabf9fa93fd0aa5544a AS build-stage
+
+ARG BUILDPLATFORM
+ARG TARGETARCH
+
+WORKDIR /app
+
+COPY vendor ./vendor
+COPY go.mod go.sum ./
+COPY cmd ./cmd
+COPY pkg ./pkg
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH="${TARGETARCH}" go build -ldflags="-w -s" -o /speedtest-exporter ./cmd/
+
+#
+# END build-stage
+###############################################################################
+
+###############################################################################
+# BEGIN test-stage
+# Run the tests in the container
+FROM docker.io/library/golang:1.21.6@sha256:5f5d61dcb58900bc57b230431b6367c900f9982b583adcabf9fa93fd0aa5544a AS test-stage
+
+WORKDIR /app
+
+COPY --from=build-stage /app /app
+# Not needed for testing, but needed for later stage
+COPY --from=build-stage /speedtest-exporter /
+
+RUN go test -v ./...
+
+#
+# END test-stage
+###############################################################################
+
+###############################################################################
+# BEGIN fetch-stage
+# Fetch the speedtest-cli binary
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.21.6@sha256:5f5d61dcb58900bc57b230431b6367c900f9982b583adcabf9fa93fd0aa5544a AS fetch-stage
+
+ARG BUILDPLATFORM
+ARG TARGETARCH
+ARG SPEEDTEST_VERSION=1.2.0
+
+WORKDIR /
+
+RUN case "${TARGETARCH}" in \
+        'amd64') export ARCHITECTURE="x86_64" ;; \
+        'arm64') export ARCHITECTURE="aarch64" ;; \
+    esac \
+    && curl -SL -o speedtest.tgz "https://install.speedtest.net/app/cli/ookla-speedtest-${SPEEDTEST_VERSION}-linux-${ARCHITECTURE}.tgz"
+
+RUN tar -xzf speedtest.tgz -C / speedtest
+
+# END fetch-stage
+###############################################################################
+
+###############################################################################
+# BEGIN combine-stage
+# Combine all outputs, to enable single layer copy for the final image
+FROM scratch AS combine-stage
+
+COPY --from=test-stage /speedtest-exporter /
+
+COPY --from=fetch-stage /speedtest /
+
+#
+# END combine-stage
+###############################################################################
+
+###############################################################################
+# BEGIN final-stage
+# Create final docker image
+FROM docker.io/library/alpine:3.19.0@sha256:51b67269f354137895d43f3b3d810bfacd3945438e94dc5ac55fdac340352f48 AS final-stage
+
+WORKDIR /
+
+COPY --from=combine-stage /speedtest-exporter /speedtest /
+
+EXPOSE 8080
+
+USER 1001
+
+ENTRYPOINT ["/speedtest-exporter", "-speedtest-path", "/speedtest"]
+
+#
+# END final-stage
+###############################################################################

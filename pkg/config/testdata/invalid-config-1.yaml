@@ -1,0 +1,4 @@
+# This should fail because of an invalid cache
+logLevel: "info"
+port: 80
+cache: "not-a-time"

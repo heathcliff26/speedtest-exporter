@@ -1,0 +1,5 @@
+logLevel: "error"
+remote:
+  enable: true
+  url: "https://example.org/"
+  instance: "test"

@@ -1,0 +1,55 @@
+{
+  "type": "result",
+  "timestamp": "2023-11-30T14:55:37Z",
+  "ping": {
+    "jitter": 0.629,
+    "latency": 17.148,
+    "low": 16.073,
+    "high": 17.519
+  },
+  "download": {
+    "bandwidth": 116445504,
+    "bytes": 1101191686,
+    "elapsed": 9609,
+    "latency": {
+      "iqm": 180.912,
+      "low": 17.825,
+      "high": 427.120,
+      "jitter": 51.901
+    }
+  },
+  "upload": {
+    "bandwidth": 6181475,
+    "bytes": 40116304,
+    "elapsed": 6511,
+    "latency": {
+      "iqm": 13.338,
+      "low": 12.343,
+      "high": 344.149,
+      "jitter": 5.912
+    }
+  },
+  "packetLoss": 0,
+  "isp": "Some ISP",
+  "interface": {
+    "internalIp": "192.25.155.66",
+    "name": "eth0",
+    "macAddr": "02:10:7D:F6:6D:69",
+    "isVpn": false,
+    "externalIp": "100.107.156.96"
+  },
+  "server": {
+    "id": 60440,
+    "host": "speedtest.hannover.jonasdevries.de",
+    "port": 8080,
+    "name": "Jonas de Vries (Network-Test)",
+    "location": "Hannover",
+    "country": "Germany",
+    "ip": "5.181.51.226"
+  },
+  "result": {
+    "id": "something-something",
+    "url": "https://www.speedtest.net/result/c/something-something",
+    "persisted": true
+  }
+}

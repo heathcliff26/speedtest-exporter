@@ -1,0 +1,7 @@
+# This should fail because of a missing remote endpoint
+remote:
+  enable: true
+  url: ""
+  instance: "test"
+  username: "somebody"
+  password: "somebody's password"

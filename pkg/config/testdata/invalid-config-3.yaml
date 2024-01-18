@@ -1,0 +1,7 @@
+# This should fail because username is provided without password
+remote:
+  enable: true
+  url: "https://example.org/"
+  instance: "test"
+  username: "somebody"
+  password: ""

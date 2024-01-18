@@ -1,0 +1,9 @@
+logLevel: "debug"
+port: 2080
+cache: "30m"
+remote:
+  enable: true
+  url: "https://example.org/"
+  instance: "test"
+  username: "somebody"
+  password: "somebody's password"
