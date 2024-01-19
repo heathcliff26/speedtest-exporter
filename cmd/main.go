@@ -9,10 +9,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/collector"
-	"github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/config"
-	"github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest"
 	"github.com/heathcliff26/promremote/promremote"
+	"github.com/heathcliff26/speedtest-exporter/pkg/collector"
+	"github.com/heathcliff26/speedtest-exporter/pkg/config"
+	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

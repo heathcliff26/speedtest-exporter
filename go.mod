@@ -1,4 +1,4 @@
-module github.com/heathcliff26/containers/apps/speedtest-exporter
+module github.com/heathcliff26/speedtest-exporter
 
 go 1.21
 

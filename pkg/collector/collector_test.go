@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest"
+	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 )
