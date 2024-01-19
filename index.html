@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>cmd: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/heathcliff26/containers/apps/speedtest-exporter/cmd/main.go (17.0%)</option>
+				
+				<option value="file1">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/collector/collector.go (96.8%)</option>
+				
+				<option value="file2">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/collector/errors.go (0.0%)</option>
+				
+				<option value="file3">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/config/config.go (82.5%)</option>
+				
+				<option value="file4">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
+				
+				<option value="file5">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest/mock-speedtest.go (0.0%)</option>
+				
+				<option value="file6">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest/speedtest-cli.go (76.9%)</option>
+				
+				<option value="file7">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest/speedtest-go.go (60.0%)</option>
+				
+				<option value="file8">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest/types.go (80.0%)</option>
+				
+				<option value="file9">github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "errors"
+        "flag"
+        "fmt"
+        "log/slog"
+        "net/http"
+        "os"
+        "strconv"
+
+        "github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/collector"
+        "github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/config"
+        "github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest"
+        "github.com/heathcliff26/promremote/promremote"
+        "github.com/prometheus/client_golang/prometheus"
+        "github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var (
+        configPath string
+        env        bool
+)
+
+// Initialize the logger
+func init() <span class="cov8" title="1">{
+        flag.StringVar(&amp;configPath, "config", "", "Optional: Path to config file")
+        flag.BoolVar(&amp;env, "env", false, "Used together with -config, when set will expand enviroment variables in config")
+}</span>
+
+// Handle requests to the webroot.
+// Serves static, human-readable HTML that provides a link to /metrics
+func ServerRootHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Fprint(w, "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome to speedtest-exporter&lt;/h1&gt;Click &lt;a href='/metrics'&gt;here&lt;/a&gt; to see metrics.&lt;/body&gt;&lt;/html&gt;")
+}</span>
+
+func createSpeedtest(path string) (speedtest.Speedtest, error) <span class="cov8" title="1">{
+        if path == "" </span><span class="cov8" title="1">{
+                slog.Debug("Using go-native speedtest implementation")
+                return speedtest.NewSpeedtest(), nil
+        }</span> else<span class="cov8" title="1"> {
+                slog.Debug("Using external speedtest-cli binary", "path", path)
+                return speedtest.NewSpeedtestCLI(path)
+        }</span>
+}
+
+func main() <span class="cov0" title="0">{
+        flag.Parse()
+
+        cfg, err := config.LoadConfig(configPath, env)
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Could not load configuration", slog.String("path", configPath), slog.String("err", err.Error()))
+                os.Exit(1)
+        }</span>
+
+        <span class="cov0" title="0">s, err := createSpeedtest(cfg.SpeedtestCLI)
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Failed initialize speedtest", "err", err)
+                os.Exit(1)
+        }</span>
+
+        <span class="cov0" title="0">collector, err := collector.NewCollector(cfg.Cache, s)
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Failed to create collector", "err", err)
+                os.Exit(1)
+        }</span>
+
+        <span class="cov0" title="0">reg := prometheus.NewRegistry()
+        reg.MustRegister(collector)
+
+        if cfg.Remote.Enable </span><span class="cov0" title="0">{
+                rwClient, err := promremote.NewWriteClient(cfg.Remote.URL, cfg.Remote.Instance, "integrations/speedtest", reg)
+                if err != nil </span><span class="cov0" title="0">{
+                        slog.Error("Failed to create remote write client", "err", err)
+                        os.Exit(1)
+                }</span>
+                <span class="cov0" title="0">if cfg.Remote.Username != "" </span><span class="cov0" title="0">{
+                        err := rwClient.SetBasicAuth(cfg.Remote.Username, cfg.Remote.Password)
+                        if err != nil </span><span class="cov0" title="0">{
+                                slog.Error("Failed to create remote_write client", "err", err)
+                                os.Exit(1)
+                        }</span>
+                }
+
+                <span class="cov0" title="0">slog.Info("Starting remote_write client")
+                rwQuit := make(chan bool)
+                rwClient.Run(cfg.Cache, rwQuit)
+                defer func() </span><span class="cov0" title="0">{
+                        rwQuit &lt;- true
+                        close(rwQuit)
+                }</span>()
+        }
+
+        <span class="cov0" title="0">http.HandleFunc("/", ServerRootHandler)
+        http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+
+        addr := ":" + strconv.Itoa(cfg.Port)
+        slog.Info("Starting http server", slog.String("addr", addr))
+        err = http.ListenAndServe(addr, nil)
+        if err != nil &amp;&amp; !errors.Is(err, http.ErrServerClosed) </span><span class="cov0" title="0">{
+                slog.Error("Failed to start http server", "err", err)
+                os.Exit(1)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package collector
+
+import (
+        "log/slog"
+        "sync"
+        "time"
+
+        "github.com/heathcliff26/containers/apps/speedtest-exporter/pkg/speedtest"
+        "github.com/prometheus/client_golang/prometheus"
+)
+
+type Collector struct {
+        cacheTime     time.Duration
+        speedtest     speedtest.Speedtest
+        lastResult    *speedtest.SpeedtestResult
+        nextSpeedtest time.Time
+}
+
+var (
+        variableLabels    = []string{"ip", "isp"}
+        jitterLatencyDesc = prometheus.NewDesc("speedtest_jitter_latency_milliseconds", "Speedtest current Jitter in ms", variableLabels, nil)
+        pingDesc          = prometheus.NewDesc("speedtest_ping_latency_milliseconds", "Speedtest current Ping in ms", variableLabels, nil)
+        downloadSpeedDesc = prometheus.NewDesc("speedtest_download_megabits_per_second", "Speedtest current Download Speed in Mbit/s", variableLabels, nil)
+        uploadSpeedDesc   = prometheus.NewDesc("speedtest_upload_megabits_per_second", "Speedtest current Upload Speed in Mbit/s", variableLabels, nil)
+        dataUsedDesc      = prometheus.NewDesc("speedtest_data_used_megabytes", "Data used for speedtest in MB", variableLabels, nil)
+        upDesc            = prometheus.NewDesc("speedtest_up", "Indicates if the speedtest was successful", nil, nil)
+)
+
+// Used to prevent concurrent runs of Speedtest's
+var speedtestMutex sync.Mutex
+
+// Create new instance of collector, returns error if an instance of speedtest is not provided
+// Arguments:
+//
+//        cacheTime: Minimum time between speedtest runs
+//        instance: Name of this instance, provided as label on all metrics
+//        speedtest: Instance of speedtest to use for collection metrics
+func NewCollector(cacheTime time.Duration, speedtest speedtest.Speedtest) (*Collector, error) <span class="cov8" title="1">{
+        if speedtest == nil </span><span class="cov8" title="1">{
+                return nil, ErrNoSpeedtest{}
+        }</span>
+        <span class="cov8" title="1">return &amp;Collector{
+                cacheTime: cacheTime,
+                speedtest: speedtest,
+        }, nil</span>
+}
+
+// Implements the Describe function for prometheus.Collector
+func (c *Collector) Describe(ch chan&lt;- *prometheus.Desc) <span class="cov0" title="0">{
+        prometheus.DescribeByCollect(c, ch)
+}</span>
+
+// Reset time for new cache
+func (c *Collector) setNextSpeedtestTime() <span class="cov8" title="1">{
+        c.nextSpeedtest = time.Now().Add(time.Minute * c.cacheTime)
+        slog.Debug("Next Speedtest will not be executed before", slog.String("time", c.nextSpeedtest.Local().String()))
+}</span>
+
+// Concurrency safe function to get the latest result of the speedtest.
+// Will either return the cached result or run a new test.
+func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult <span class="cov8" title="1">{
+        if c.lastResult != nil &amp;&amp; time.Now().Before(c.nextSpeedtest) </span><span class="cov8" title="1">{
+                slog.Debug("Cache has not expired, returning cached results")
+                return c.lastResult
+        }</span>
+
+        // Lock here to prevent running more than one Speedtest at a time, since they would affect each others results
+        <span class="cov8" title="1">speedtestMutex.Lock()
+        defer speedtestMutex.Unlock()
+        // Check again if another thread already ran a Speedtest while this one waited
+        if c.lastResult != nil &amp;&amp; time.Now().Before(c.nextSpeedtest) </span><span class="cov8" title="1">{
+                slog.Debug("Cache has been renewed, returning cached results")
+                return c.lastResult
+        }</span>
+        <span class="cov8" title="1">slog.Debug("Cache expired, running new Speedtest")
+        c.lastResult = c.speedtest.Speedtest()
+        c.setNextSpeedtestTime()
+        return c.lastResult</span>
+}
+
+// Implements the Collect function for prometheus.Collector
+func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" title="1">{
+        slog.Debug("Starting collection of speedtest metrics")
+        result := c.getSpeedtestResult()
+        var up float64
+        if result.Success() </span><span class="cov8" title="1">{
+                up = 1
+                labelValues := []string{result.ClientIp(), result.ClientIsp()}
+                ch &lt;- prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, result.JitterLatency(), labelValues...)
+                ch &lt;- prometheus.MustNewConstMetric(pingDesc, prometheus.GaugeValue, result.Ping(), labelValues...)
+                ch &lt;- prometheus.MustNewConstMetric(downloadSpeedDesc, prometheus.GaugeValue, result.DownloadSpeed(), labelValues...)
+                ch &lt;- prometheus.MustNewConstMetric(uploadSpeedDesc, prometheus.GaugeValue, result.UploadSpeed(), labelValues...)
+                ch &lt;- prometheus.MustNewConstMetric(dataUsedDesc, prometheus.GaugeValue, result.DataUsed(), labelValues...)
+        }</span>
+        <span class="cov8" title="1">ch &lt;- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, up)
+        slog.Debug("Finished collection of speedtest metrics")</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package collector
+
+type ErrNoSpeedtest struct{}
+
+func (e ErrNoSpeedtest) Error() string <span class="cov0" title="0">{
+        return "No valid speedtest provided"
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package config
+
+import (
+        "log/slog"
+        "os"
+        "strings"
+        "time"
+
+        "github.com/heathcliff26/promremote/promremote"
+        "gopkg.in/yaml.v3"
+)
+
+const (
+        DEFAULT_LOG_LEVEL = "info"
+        DEFAULT_PORT      = 8080
+        DEFAULT_CACHE     = time.Duration(5 * time.Minute)
+)
+
+var logLevel *slog.LevelVar
+
+// Initialize the logger
+func init() <span class="cov8" title="1">{
+        logLevel = &amp;slog.LevelVar{}
+        opts := slog.HandlerOptions{
+                Level: logLevel,
+        }
+        logger := slog.New(slog.NewTextHandler(os.Stdout, &amp;opts))
+        slog.SetDefault(logger)
+}</span>
+
+type Config struct {
+        LogLevel     string        `yaml:"logLevel,omitempty"`
+        Port         int           `yaml:"port,omitempty"`
+        Cache        time.Duration `yaml:"cache,omitempty"`
+        SpeedtestCLI string        `yaml:"speedtestCLI,omitempty"`
+        Remote       RemoteConfig  `yaml:"remote,omitempty"`
+}
+
+type RemoteConfig struct {
+        Enable   bool   `yaml:"enable"`
+        URL      string `yaml:"url"`
+        Instance string `yaml:"instance"`
+        Username string `yaml:"username,omitempty"`
+        Password string `yaml:"password,omitempty"`
+}
+
+// Returns a Config with default values set
+func DefaultConfig() Config <span class="cov8" title="1">{
+        return Config{
+                LogLevel: DEFAULT_LOG_LEVEL,
+                Port:     DEFAULT_PORT,
+                Cache:    DEFAULT_CACHE,
+        }
+}</span>
+
+// Loads config from file, returns error if config is invalid
+// Arguments:
+//
+//        path: Path to config file
+//        mode: Mode used, determines how the config will be validated and which values will be processed
+//        env: Determines if enviroment variables in the file will be expanded before decoding
+func LoadConfig(path string, env bool) (Config, error) <span class="cov8" title="1">{
+        c := DefaultConfig()
+
+        if path == "" </span><span class="cov8" title="1">{
+                _ = setLogLevel(DEFAULT_LOG_LEVEL)
+                return c, nil
+        }</span>
+
+        <span class="cov8" title="1">f, err := os.ReadFile(path)
+        if err != nil </span><span class="cov8" title="1">{
+                return Config{}, err
+        }</span>
+
+        <span class="cov8" title="1">if env </span><span class="cov8" title="1">{
+                f = []byte(os.ExpandEnv(string(f)))
+        }</span>
+
+        <span class="cov8" title="1">err = yaml.Unmarshal(f, &amp;c)
+        if err != nil </span><span class="cov8" title="1">{
+                return Config{}, err
+        }</span>
+
+        <span class="cov8" title="1">err = setLogLevel(c.LogLevel)
+        if err != nil </span><span class="cov0" title="0">{
+                return Config{}, err
+        }</span>
+
+        <span class="cov8" title="1">if c.Remote.Enable </span><span class="cov8" title="1">{
+                if c.Remote.URL == "" </span><span class="cov8" title="1">{
+                        return Config{}, promremote.ErrMissingEndpoint{}
+                }</span>
+                <span class="cov8" title="1">if c.Remote.Username != c.Remote.Password &amp;&amp; (c.Remote.Username == "" || c.Remote.Password == "") </span><span class="cov8" title="1">{
+                        return Config{}, promremote.ErrMissingAuthCredentials{}
+                }</span>
+                <span class="cov8" title="1">if c.Remote.Instance == "" </span><span class="cov0" title="0">{
+                        slog.Info("No instance name provided, defaulting to hostname")
+                        hostname, err := os.Hostname()
+                        if err != nil </span><span class="cov0" title="0">{
+                                slog.Error("Failed to retrieve hostname, using localhost instead", "err", err)
+                                hostname = "localhost"
+                        }</span>
+                        <span class="cov0" title="0">c.Remote.Instance = hostname</span>
+                }
+        }
+
+        <span class="cov8" title="1">return c, nil</span>
+}
+
+// Parse a given string and set the resulting log level
+func setLogLevel(level string) error <span class="cov8" title="1">{
+        switch strings.ToLower(level) </span>{
+        case "debug":<span class="cov8" title="1">
+                logLevel.Set(slog.LevelDebug)</span>
+        case "info":<span class="cov8" title="1">
+                logLevel.Set(slog.LevelInfo)</span>
+        case "warn":<span class="cov8" title="1">
+                logLevel.Set(slog.LevelWarn)</span>
+        case "error":<span class="cov8" title="1">
+                logLevel.Set(slog.LevelError)</span>
+        default:<span class="cov8" title="1">
+                return &amp;ErrUnknownLogLevel{level}</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package config
+
+import "time"
+
+type ErrUnknownLogLevel struct {
+        Level string
+}
+
+func (e *ErrUnknownLogLevel) Error() string <span class="cov0" title="0">{
+        return "Unknown log level " + e.Level
+}</span>
+
+type ErrInvalidInterval struct {
+        Interval time.Duration
+}
+
+func (e *ErrInvalidInterval) Error() string <span class="cov0" title="0">{
+        return "Interval is to short, needs to be at least 30s, current " + e.Interval.String()
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package speedtest
+
+type MockSpeedtest struct {
+        Callback func()
+        Fail     bool
+        Result   *SpeedtestResult
+}
+
+func (s *MockSpeedtest) Speedtest() *SpeedtestResult <span class="cov0" title="0">{
+        if s.Callback != nil </span><span class="cov0" title="0">{
+                s.Callback()
+        }</span>
+        <span class="cov0" title="0">if s.Fail </span><span class="cov0" title="0">{
+                return NewFailedSpeedtestResult()
+        }</span>
+        <span class="cov0" title="0">return s.Result</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package speedtest
+
+import (
+        "bytes"
+        "encoding/json"
+        "errors"
+        "log/slog"
+        "os/exec"
+)
+
+type SpeedtestCLI struct {
+        path string
+}
+
+// Create SpeedtestCLI, fails when it can't find the speedtest-cli binary
+// Arguments:
+//
+//        executable: name or full path to speedtest-cli binary
+func NewSpeedtestCLI(executable string) (*SpeedtestCLI, error) <span class="cov8" title="1">{
+        path, err := exec.LookPath(executable)
+        if errors.Is(err, exec.ErrDot) </span><span class="cov0" title="0">{
+                err = nil
+        }</span>
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return &amp;SpeedtestCLI{
+                path: path,
+        }, nil</span>
+}
+
+// Get path of the speedtest-cli binary
+func (s *SpeedtestCLI) Path() string <span class="cov8" title="1">{
+        return s.path
+}</span>
+
+var makeCmd = func(path string) *exec.Cmd <span class="cov0" title="0">{
+        return exec.Command(path, "--format=json-pretty", "--accept-license", "--accept-gdpr")
+}</span>
+
+// Execute the speedtest-cli binary and parse the result
+func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1">{
+        cmd := makeCmd(s.Path())
+        var stdout, stderr bytes.Buffer
+        cmd.Stdout = &amp;stdout
+        cmd.Stderr = &amp;stderr
+        err := cmd.Run()
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Could not execute speedtest", "error", err, slog.String("stdout", stdout.String()), slog.String("stderr", stderr.String()))
+                return NewFailedSpeedtestResult()
+        }</span>
+
+        <span class="cov8" title="1">var out resultJSON
+        err = json.Unmarshal(stdout.Bytes(), &amp;out)
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Parsing JSON output from speedtest failed", "error", err, slog.String("output", stdout.String()))
+                return NewFailedSpeedtestResult()
+        }</span>
+
+        <span class="cov8" title="1">downloadMbps := convertBytesToMbits(out.Download.Bandwidth)
+        uploadMbps := convertBytesToMbits(out.Upload.Bandwidth)
+        dataUsed := convertBytesToMB(out.Download.Bytes) + convertBytesToMB(out.Upload.Bytes)
+
+        slog.Info("Successfully ran speedtest", slog.Group("result"),
+                slog.Float64("jitterLatency", out.Ping.Jitter),
+                slog.Float64("ping", out.Ping.Latency),
+                slog.Float64("downloadSpeed", downloadMbps),
+                slog.Float64("uploadSpeed", uploadMbps),
+                slog.Float64("dataUsed", dataUsed),
+                slog.Int("serverId", out.Server.Id),
+                slog.String("serverHost", out.Server.Host),
+                slog.String("isp", out.ISP),
+                slog.String("IP", out.Interface.ExternalIP),
+        )
+
+        return NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, out.ISP, out.Interface.ExternalIP)</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package speedtest
+
+import (
+        "log/slog"
+
+        "github.com/showwin/speedtest-go/speedtest"
+)
+
+type SpeedtestGo struct {
+}
+
+// Create instance of Speedtest
+func NewSpeedtest() *SpeedtestGo <span class="cov8" title="1">{
+        return &amp;SpeedtestGo{}
+}</span>
+
+// Use the speedtest-go api to run a speedtest and parse the result
+func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">{
+        var client = speedtest.New()
+
+        serverList, err := client.FetchServers()
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Could not fetch server list", "error", err)
+                return NewFailedSpeedtestResult()
+        }</span>
+        <span class="cov8" title="1">targets, err := serverList.FindServer([]int{})
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Failed to find closest server", "error", err)
+                return NewFailedSpeedtestResult()
+        }</span>
+        <span class="cov8" title="1">if len(targets) != 1 </span><span class="cov0" title="0">{
+                slog.Error("FindServer returned more than one server")
+                return NewFailedSpeedtestResult()
+        }</span>
+        <span class="cov8" title="1">server := targets[0]
+
+        err = server.TestAll()
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Failed to run speedtest", "error", err)
+                return NewFailedSpeedtestResult()
+        }</span>
+        <span class="cov8" title="1">user, err := client.FetchUserInfo()
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Failed to fetch client information", "error", err)
+                return NewFailedSpeedtestResult()
+        }</span>
+
+        <span class="cov8" title="1">dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
+
+        slog.Info("Successfully ran speedtest", slog.Group("result"),
+                slog.Int64("jitterLatency", server.Jitter.Milliseconds()),
+                slog.Int64("ping", server.Latency.Milliseconds()),
+                slog.Float64("downloadSpeed", server.DLSpeed),
+                slog.Float64("uploadSpeed", server.ULSpeed),
+                slog.Float64("dataUsed", dataUsed),
+                slog.String("serverId", server.ID),
+                slog.String("serverHost", server.Host),
+                slog.String("isp", user.Isp),
+                slog.String("IP", user.IP),
+        )
+
+        return NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), server.DLSpeed, server.ULSpeed, dataUsed, user.Isp, user.IP)</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package speedtest
+
+type Speedtest interface {
+        Speedtest() *SpeedtestResult
+}
+
+type SpeedtestResult struct {
+        jitterLatency float64 // ms
+        ping          float64 // ms
+        downloadSpeed float64 // Mbit/s
+        uploadSpeed   float64 // Mbit/s
+        dataUsed      float64 // MB
+        clientIsp     string
+        clientIp      string
+        success       bool
+}
+
+// Create a new SpeedtestResult for a failed speedtest.
+func NewFailedSpeedtestResult() *SpeedtestResult <span class="cov8" title="1">{
+        return &amp;SpeedtestResult{
+                success: false,
+        }
+}</span>
+
+// Create a new SpeedtestResult from a successfull speedrun
+func NewSpeedtestResult(jitterLatency float64, ping float64, downloadSpeed float64, uploadSpeed float64, dataUsed float64, clientIsp string, clientIp string) *SpeedtestResult <span class="cov8" title="1">{
+        return &amp;SpeedtestResult{
+                jitterLatency: jitterLatency,
+                ping:          ping,
+                downloadSpeed: downloadSpeed,
+                uploadSpeed:   uploadSpeed,
+                dataUsed:      dataUsed,
+                clientIsp:     clientIsp,
+                clientIp:      clientIp,
+                success:       true,
+        }
+}</span>
+
+// Jitter latency of ping in ms
+func (r *SpeedtestResult) JitterLatency() float64 <span class="cov0" title="0">{
+        return r.jitterLatency
+}</span>
+
+// Ping in ms
+func (r *SpeedtestResult) Ping() float64 <span class="cov0" title="0">{
+        return r.ping
+}</span>
+
+// Download speed im Mbps
+func (r *SpeedtestResult) DownloadSpeed() float64 <span class="cov8" title="1">{
+        return r.downloadSpeed
+}</span>
+
+// Upload speed in Mbps
+func (r *SpeedtestResult) UploadSpeed() float64 <span class="cov8" title="1">{
+        return r.uploadSpeed
+}</span>
+
+// Data usage of speedtest in MB
+func (r *SpeedtestResult) DataUsed() float64 <span class="cov8" title="1">{
+        return r.dataUsed
+}</span>
+
+// ISP name of the client/connection
+func (r *SpeedtestResult) ClientIsp() string <span class="cov8" title="1">{
+        return r.clientIsp
+}</span>
+
+// Public IP of the client/connection
+func (r *SpeedtestResult) ClientIp() string <span class="cov8" title="1">{
+        return r.clientIp
+}</span>
+
+// Indicates if the test was successfull
+func (r *SpeedtestResult) Success() bool <span class="cov8" title="1">{
+        return r.success
+}</span>
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package speedtest
+
+// Convert unit bytes to megabits
+func convertBytesToMbits(bytes int64) float64 <span class="cov8" title="1">{
+        return convertBytesToMB(bytes) * 8
+}</span>
+
+// Convert unit bytes to megabytes
+func convertBytesToMB(bytes int64) float64 <span class="cov8" title="1">{
+        return float64(bytes) / 1000000
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
