@@ -1,0 +1,22 @@
+---
+name: "Validate Renovate Config"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - .github/renovate-bot.json5
+      - .github/renovate.json5
+  pull_request:
+    branches: ["main"]
+    paths:
+      - .github/renovate-bot.json5
+      - .github/renovate.json5
+      - .github/workflows/renovate-config-validator.yaml
+  merge_group:
+    branches: ["main"]
+
+jobs:
+  validate-renovate-config:
+    uses: heathcliff26/ci/.github/workflows/renovate-config-validator.yaml@main

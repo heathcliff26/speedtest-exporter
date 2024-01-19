@@ -1,0 +1,19 @@
+
+---
+name: "Labels Check"
+
+on:
+  pull_request:
+    branches: ["main"]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+jobs:
+  check-labels:
+    permissions:
+      pull-requests: read
+    uses: heathcliff26/ci/.github/workflows/label-check.yaml@main

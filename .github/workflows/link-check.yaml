@@ -1,0 +1,14 @@
+---
+name: "Link Check"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+
+jobs:
+  check-links:
+    uses: heathcliff26/ci/.github/workflows/link-check.yaml@main
+    secrets: inherit
+    with:
+      exclude-paths: "vendor"
