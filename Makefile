@@ -7,9 +7,10 @@ CLI_TAG ?= cli
 
 GO_BUILD_FLAGS ?= -ldflags="-w -s"
 
-default: build-slim
+default: build
 
-build: build-slim build-cli
+build:
+	go build $(GO_BUILD_FLAGS) -o bin/speedtest-exporter ./cmd/
 
 build-slim:
 	podman build -t $(REPOSITORY)/$(CONTAINER_NAME):$(SLIM_TAG) .
@@ -17,10 +18,7 @@ build-slim:
 build-cli:
 	podman build -f Dockerfile.cli -t $(REPOSITORY)/$(CONTAINER_NAME):$(CLI_TAG) .
 
-go-build:
-	go build $(GO_BUILD_FLAGS) -o bin/speedtest-exporter ./cmd/
-
-go-test:
+test:
 	go test -v ./...
 
 .PHONY: \
@@ -28,6 +26,5 @@ go-test:
 	build \
 	build-slim \
 	build-cli \
-	go-build \
-	go-test \
+	test \
 	$(NULL)

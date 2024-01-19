@@ -1,0 +1,15 @@
+---
+name: "Generate go test cover report"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "*.go"
+      - "**/*.go"
+
+jobs:
+  generate-reports:
+    uses: heathcliff26/ci/.github/workflows/golang-testcover-report.yaml@main
+    secrets: inherit
