@@ -4,7 +4,7 @@ name: CI
 on:
   workflow_dispatch:
   push:
-    branches: ["main", "renovate/*"]
+    branches: ["main"]
     paths:
       - "go.mod"
       - "go.sum"
