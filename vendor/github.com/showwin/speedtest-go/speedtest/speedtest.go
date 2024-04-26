@@ -1,17 +1,19 @@
 package speedtest
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
 )
 
 var (
-	version          = "1.6.10"
+	version          = "1.6.11"
 	DefaultUserAgent = fmt.Sprintf("showwin/speedtest-go %s", version)
 )
 
@@ -35,12 +37,14 @@ type Speedtest struct {
 }
 
 type UserConfig struct {
-	T         *http.Transport
-	UserAgent string
-	Proxy     string
-	Source    string
-	Debug     bool
-	PingMode  Proto
+	T             *http.Transport
+	UserAgent     string
+	Proxy         string
+	Source        string
+	DnsBindSource bool
+	DialerControl func(network, address string, c syscall.RawConn) error
+	Debug         bool
+	PingMode      Proto
 
 	SavingMode bool
 
@@ -107,6 +111,24 @@ func (s *Speedtest) NewUserConfig(uc *UserConfig) {
 		} else {
 			dbg.Printf("Warning: skipping parse the source address. err: %s\n", err.Error())
 		}
+		if uc.DnsBindSource {
+			net.DefaultResolver.Dial = func(ctx context.Context, network, dnsServer string) (net.Conn, error) {
+				dialer := &net.Dialer{
+					Timeout: 5 * time.Second,
+					LocalAddr: func(network string) net.Addr {
+						switch network {
+						case "udp", "udp4", "udp6":
+							return &net.UDPAddr{IP: net.ParseIP(address)}
+						case "tcp", "tcp4", "tcp6":
+							return &net.TCPAddr{IP: net.ParseIP(address)}
+						default:
+							return nil
+						}
+					}(network),
+				}
+				return dialer.DialContext(ctx, network, dnsServer)
+			}
+		}
 	}
 
 	if len(uc.Proxy) > 0 {
@@ -123,12 +145,14 @@ func (s *Speedtest) NewUserConfig(uc *UserConfig) {
 		LocalAddr: tcpSource,
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
+		Control:   uc.DialerControl,
 	}
 
 	s.ipDialer = &net.Dialer{
 		LocalAddr: icmpSource,
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
+		Control:   uc.DialerControl,
 	}
 
 	s.config.T = &http.Transport{

@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/heathcliff26/promremote v1.0.1
 	github.com/prometheus/client_golang v1.19.0
-	github.com/showwin/speedtest-go v1.6.10
+	github.com/showwin/speedtest-go v1.6.11
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )
