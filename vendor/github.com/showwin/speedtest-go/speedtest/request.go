@@ -268,6 +268,7 @@ func (s *Server) HTTPPing(
 	echoFreq time.Duration,
 	callback func(latency time.Duration),
 ) (latencies []int64, err error) {
+	var contextErr error
 	u, err := url.Parse(s.URL)
 	if err != nil || len(u.Host) == 0 {
 		return nil, err
@@ -280,26 +281,43 @@ func (s *Server) HTTPPing(
 	if err != nil {
 		return nil, err
 	}
+	// carry out an extra request to warm up the connection and ensure the first request is not going to affect the
+	// overall estimation
+	echoTimes++
 	for i := 0; i < echoTimes; i++ {
 		sTime := time.Now()
 		resp, err := s.Context.doer.Do(req)
 		endTime := time.Since(sTime)
 		if err != nil {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				contextErr = err
+				break
+			}
+
 			failTimes++
 			continue
 		}
 		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
-		latencies = append(latencies, endTime.Nanoseconds()/2)
-		dbg.Printf("2RTT: %s\n", endTime)
-		if callback != nil {
-			callback(endTime / 2)
+		if i > 0 {
+			latency := endTime.Nanoseconds()
+			latencies = append(latencies, latency)
+			dbg.Printf("RTT: %d\n", latency)
+			if callback != nil {
+				callback(endTime)
+			}
 		}
 		time.Sleep(echoFreq)
 	}
+
+	if contextErr != nil {
+		return latencies, contextErr
+	}
+
 	if failTimes == echoTimes {
 		return nil, ErrConnectTimeout
 	}
+
 	return
 }
 
