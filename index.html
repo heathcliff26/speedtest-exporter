@@ -69,7 +69,7 @@
 				
 				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (76.9%)</option>
 				
-				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (60.0%)</option>
+				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (63.0%)</option>
 				
 				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (80.0%)</option>
 				
@@ -594,13 +594,15 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">
                 return NewFailedSpeedtestResult()
         }</span>
 
-        <span class="cov8" title="1">dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
+        <span class="cov8" title="1">downloadMbps := convertBytesToMbits(server.DLSpeed)
+        uploadMbps := convertBytesToMbits(server.ULSpeed)
+        dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
 
         slog.Info("Successfully ran speedtest", slog.Group("result"),
                 slog.Int64("jitterLatency", server.Jitter.Milliseconds()),
                 slog.Int64("ping", server.Latency.Milliseconds()),
-                slog.Float64("downloadSpeed", server.DLSpeed),
-                slog.Float64("uploadSpeed", server.ULSpeed),
+                slog.Float64("downloadSpeed", downloadMbps),
+                slog.Float64("uploadSpeed", uploadMbps),
                 slog.Float64("dataUsed", dataUsed),
                 slog.String("serverId", server.ID),
                 slog.String("serverHost", server.Host),
@@ -608,7 +610,7 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">
                 slog.String("IP", user.IP),
         )
 
-        return NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), server.DLSpeed, server.ULSpeed, dataUsed, user.Isp, user.IP)</span>
+        return NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, user.Isp, user.IP)</span>
 }
 </pre>
 		
@@ -693,14 +695,23 @@ func (r *SpeedtestResult) Success() bool <span class="cov8" title="1">{
 		
 		<pre class="file" id="file9" style="display: none">package speedtest
 
+import (
+        "github.com/showwin/speedtest-go/speedtest"
+        "golang.org/x/exp/constraints"
+)
+
+type Number interface {
+        constraints.Integer | speedtest.ByteRate
+}
+
 // Convert unit bytes to megabits
-func convertBytesToMbits(bytes int64) float64 <span class="cov8" title="1">{
+func convertBytesToMbits[T Number](bytes T) float64 <span class="cov8" title="1">{
         return convertBytesToMB(bytes) * 8
 }</span>
 
 // Convert unit bytes to megabytes
-func convertBytesToMB(bytes int64) float64 <span class="cov8" title="1">{
-        return float64(bytes) / 1000000
+func convertBytesToMB[T Number](bytes T) float64 <span class="cov8" title="1">{
+        return float64(bytes) / speedtest.MB
 }</span>
 </pre>
 		
