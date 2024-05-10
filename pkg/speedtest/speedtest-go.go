@@ -45,13 +45,15 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 		return NewFailedSpeedtestResult()
 	}
 
+	downloadMbps := convertBytesToMbits(server.DLSpeed)
+	uploadMbps := convertBytesToMbits(server.ULSpeed)
 	dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
 
 	slog.Info("Successfully ran speedtest", slog.Group("result"),
 		slog.Int64("jitterLatency", server.Jitter.Milliseconds()),
 		slog.Int64("ping", server.Latency.Milliseconds()),
-		slog.Float64("downloadSpeed", server.DLSpeed),
-		slog.Float64("uploadSpeed", server.ULSpeed),
+		slog.Float64("downloadSpeed", downloadMbps),
+		slog.Float64("uploadSpeed", uploadMbps),
 		slog.Float64("dataUsed", dataUsed),
 		slog.String("serverId", server.ID),
 		slog.String("serverHost", server.Host),
@@ -59,5 +61,5 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 		slog.String("IP", user.IP),
 	)
 
-	return NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), server.DLSpeed, server.ULSpeed, dataUsed, user.Isp, user.IP)
+	return NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, user.Isp, user.IP)
 }
