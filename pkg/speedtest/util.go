@@ -1,11 +1,20 @@
 package speedtest
 
+import (
+	"github.com/showwin/speedtest-go/speedtest"
+	"golang.org/x/exp/constraints"
+)
+
+type Number interface {
+	constraints.Integer | speedtest.ByteRate
+}
+
 // Convert unit bytes to megabits
-func convertBytesToMbits(bytes int64) float64 {
+func convertBytesToMbits[T Number](bytes T) float64 {
 	return convertBytesToMB(bytes) * 8
 }
 
 // Convert unit bytes to megabytes
-func convertBytesToMB(bytes int64) float64 {
-	return float64(bytes) / 1000000
+func convertBytesToMB[T Number](bytes T) float64 {
+	return float64(bytes) / speedtest.MB
 }
