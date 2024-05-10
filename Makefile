@@ -21,10 +21,14 @@ build-cli:
 test:
 	go test -v ./...
 
+update-deps:
+	hack/update-deps.sh
+
 .PHONY: \
 	default \
 	build \
 	build-slim \
 	build-cli \
 	test \
+	update-deps \
 	$(NULL)
