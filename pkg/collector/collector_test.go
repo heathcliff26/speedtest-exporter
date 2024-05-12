@@ -11,6 +11,8 @@ import (
 
 var mockSpeedtestResult = speedtest.NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "Foo Corp.", "127.0.0.1")
 
+const defaultCacheTime = 5 * time.Minute
+
 func NewMockSpeedtest() *speedtest.MockSpeedtest {
 	return &speedtest.MockSpeedtest{Result: mockSpeedtestResult}
 }
@@ -18,11 +20,11 @@ func NewMockSpeedtest() *speedtest.MockSpeedtest {
 func TestNewCollector(t *testing.T) {
 	s := NewMockSpeedtest()
 	expectedCollector := &Collector{
-		cacheTime: 5,
+		cacheTime: defaultCacheTime,
 		speedtest: s,
 	}
 
-	actualCollector, err := NewCollector(5, s)
+	actualCollector, err := NewCollector(defaultCacheTime, s)
 	if err != nil {
 		t.Fatalf("Could not create new Collector: %v", err)
 	}
@@ -31,24 +33,27 @@ func TestNewCollector(t *testing.T) {
 
 	assert.Equal(expectedCollector, actualCollector)
 
-	_, err = NewCollector(0, nil)
+	_, err = NewCollector(defaultCacheTime, nil)
 	assert.Equal(ErrNoSpeedtest{}, err)
 }
 
 func TestSetNextSpeedtestTime(t *testing.T) {
-	c, err := NewCollector(5, NewMockSpeedtest())
+	now := time.Now()
+
+	c, err := NewCollector(defaultCacheTime, NewMockSpeedtest())
 	if err != nil {
 		t.Fatalf("Could not create new Collector: %v", err)
 	}
 
-	c.nextSpeedtest = time.Now()
+	c.nextSpeedtest = now
 	c.setNextSpeedtestTime()
 
-	assert.GreaterOrEqual(t, c.nextSpeedtest, time.Now())
+	assert.Greater(t, c.nextSpeedtest, now.Add(defaultCacheTime-time.Millisecond))
+	assert.Less(t, c.nextSpeedtest, now.Add(defaultCacheTime+time.Millisecond))
 }
 
 func TestFirstSpeedtestRun(t *testing.T) {
-	c, err := NewCollector(5, NewMockSpeedtest())
+	c, err := NewCollector(defaultCacheTime, NewMockSpeedtest())
 	if err != nil {
 		t.Fatalf("Could not create new Collector: %v", err)
 	}
@@ -68,7 +73,7 @@ func TestResultFromCache(t *testing.T) {
 		speedtestRan = true
 	}
 
-	c, err := NewCollector(5, s)
+	c, err := NewCollector(defaultCacheTime, s)
 	if err != nil {
 		t.Fatalf("Could not create new Collector: %v", err)
 	}
@@ -93,7 +98,7 @@ func TestRunSpeedtestWhenCacheEmpty(t *testing.T) {
 		speedtestRan = true
 	}
 
-	c, err := NewCollector(5, s)
+	c, err := NewCollector(defaultCacheTime, s)
 	if err != nil {
 		t.Fatalf("Could not create new Collector: %v", err)
 	}
@@ -119,7 +124,7 @@ func TestRunSpeedtestWhenCacheExpired(t *testing.T) {
 		speedtestRan = true
 	}
 
-	c, err := NewCollector(5, s)
+	c, err := NewCollector(defaultCacheTime, s)
 	if err != nil {
 		t.Fatalf("Could not create new Collector: %v", err)
 	}
@@ -153,7 +158,7 @@ func TestSpeedtestIsNotRunConcurrently(t *testing.T) {
 		time.Sleep(10 * time.Second)
 	}
 
-	c, err := NewCollector(5, s)
+	c, err := NewCollector(defaultCacheTime, s)
 	if err != nil {
 		t.Fatalf("Could not create new Collector: %v", err)
 	}

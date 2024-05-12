@@ -52,15 +52,15 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 
 // Reset time for new cache
 func (c *Collector) setNextSpeedtestTime() {
-	c.nextSpeedtest = time.Now().Add(time.Minute * c.cacheTime)
-	slog.Debug("Next Speedtest will not be executed before", slog.String("time", c.nextSpeedtest.Local().String()))
+	c.nextSpeedtest = time.Now().Add(c.cacheTime)
+	slog.Debug("Next Speedtest will not be executed before", slog.String("next", c.nextSpeedtest.Local().String()))
 }
 
 // Concurrency safe function to get the latest result of the speedtest.
 // Will either return the cached result or run a new test.
 func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult {
-	if c.lastResult != nil && time.Now().Before(c.nextSpeedtest) {
-		slog.Debug("Cache has not expired, returning cached results")
+	if c.cacheValid() {
+		slog.Debug("Cache has not expired, returning cached results", slog.String("now", time.Now().String()), slog.String("next", c.nextSpeedtest.Local().String()))
 		return c.lastResult
 	}
 
@@ -68,7 +68,7 @@ func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult {
 	speedtestMutex.Lock()
 	defer speedtestMutex.Unlock()
 	// Check again if another thread already ran a Speedtest while this one waited
-	if c.lastResult != nil && time.Now().Before(c.nextSpeedtest) {
+	if c.cacheValid() {
 		slog.Debug("Cache has been renewed, returning cached results")
 		return c.lastResult
 	}
@@ -76,6 +76,11 @@ func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult {
 	c.lastResult = c.speedtest.Speedtest()
 	c.setNextSpeedtestTime()
 	return c.lastResult
+}
+
+// Check if the current cache is still valid
+func (c *Collector) cacheValid() bool {
+	return c.lastResult != nil && time.Now().Before(c.nextSpeedtest)
 }
 
 // Implements the Collect function for prometheus.Collector

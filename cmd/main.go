@@ -82,7 +82,7 @@ func main() {
 			}
 		}
 
-		slog.Info("Starting remote_write client")
+		slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
 		rwQuit := make(chan bool)
 		rwClient.Run(cfg.Cache, rwQuit)
 		defer func() {
