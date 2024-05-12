@@ -57,7 +57,7 @@
 				
 				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (17.0%)</option>
 				
-				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.8%)</option>
+				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.9%)</option>
 				
 				<option value="file2">github.com/heathcliff26/speedtest-exporter/pkg/collector/errors.go (0.0%)</option>
 				
@@ -171,7 +171,7 @@ func main() <span class="cov0" title="0">{
                         }</span>
                 }
 
-                <span class="cov0" title="0">slog.Info("Starting remote_write client")
+                <span class="cov0" title="0">slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
                 rwQuit := make(chan bool)
                 rwClient.Run(cfg.Cache, rwQuit)
                 defer func() </span><span class="cov0" title="0">{
@@ -247,15 +247,15 @@ func (c *Collector) Describe(ch chan&lt;- *prometheus.Desc) <span class="cov0" t
 
 // Reset time for new cache
 func (c *Collector) setNextSpeedtestTime() <span class="cov8" title="1">{
-        c.nextSpeedtest = time.Now().Add(time.Minute * c.cacheTime)
-        slog.Debug("Next Speedtest will not be executed before", slog.String("time", c.nextSpeedtest.Local().String()))
+        c.nextSpeedtest = time.Now().Add(c.cacheTime)
+        slog.Debug("Next Speedtest will not be executed before", slog.String("next", c.nextSpeedtest.Local().String()))
 }</span>
 
 // Concurrency safe function to get the latest result of the speedtest.
 // Will either return the cached result or run a new test.
 func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult <span class="cov8" title="1">{
-        if c.lastResult != nil &amp;&amp; time.Now().Before(c.nextSpeedtest) </span><span class="cov8" title="1">{
-                slog.Debug("Cache has not expired, returning cached results")
+        if c.cacheValid() </span><span class="cov8" title="1">{
+                slog.Debug("Cache has not expired, returning cached results", slog.String("now", time.Now().String()), slog.String("next", c.nextSpeedtest.Local().String()))
                 return c.lastResult
         }</span>
 
@@ -263,7 +263,7 @@ func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult <span class=
         <span class="cov8" title="1">speedtestMutex.Lock()
         defer speedtestMutex.Unlock()
         // Check again if another thread already ran a Speedtest while this one waited
-        if c.lastResult != nil &amp;&amp; time.Now().Before(c.nextSpeedtest) </span><span class="cov8" title="1">{
+        if c.cacheValid() </span><span class="cov8" title="1">{
                 slog.Debug("Cache has been renewed, returning cached results")
                 return c.lastResult
         }</span>
@@ -272,6 +272,11 @@ func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult <span class=
         c.setNextSpeedtestTime()
         return c.lastResult</span>
 }
+
+// Check if the current cache is still valid
+func (c *Collector) cacheValid() bool <span class="cov8" title="1">{
+        return c.lastResult != nil &amp;&amp; time.Now().Before(c.nextSpeedtest)
+}</span>
 
 // Implements the Collect function for prometheus.Collector
 func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" title="1">{
