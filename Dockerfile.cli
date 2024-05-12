@@ -67,6 +67,8 @@ COPY --from=test-stage /speedtest-exporter /
 
 COPY --from=fetch-stage /speedtest /
 
+COPY configs/dockerfile-cli.yaml /config.yaml
+
 #
 # END combine-stage
 ###############################################################################
@@ -78,13 +80,14 @@ FROM docker.io/library/alpine:3.19.1@sha256:c5b1261d6d3e43071626931fc004f70149ba
 
 WORKDIR /
 
-COPY --from=combine-stage /speedtest-exporter /speedtest /
+COPY --from=combine-stage / /
 
 EXPOSE 8080
 
 USER 1001
 
-ENTRYPOINT ["/speedtest-exporter", "-speedtest-path", "/speedtest"]
+ENTRYPOINT ["/speedtest-exporter"]
+CMD ["-config", "/config.yaml"]
 
 #
 # END final-stage
