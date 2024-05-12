@@ -18,6 +18,7 @@ One important functionality is that this projects implements prometheus remote_w
     - [Image location](#image-location)
     - [Tags](#tags)
   - [Usage](#usage)
+  - [Configuration](#configuration)
   - [Metrics](#metrics)
   - [Dashboard](#dashboard)
 
@@ -40,6 +41,14 @@ There are different flavors of the image:
 | **cli**          | Alpine based container that also contains the speedtest.net cli client binary. Uses the speedtest.net cli to run the tests. |
 
 ## Usage
+
+To run the image with default settings simply use:
+```
+podman run -d -p 8080:8080 ghcr.io/heathcliff26/speedtest-exporter:slim
+```
+You can then view you metrics under `http://localhost:8080/metrics`
+
+## Configuration
 
 Output of `speedtest-exporter -h`
 ```
