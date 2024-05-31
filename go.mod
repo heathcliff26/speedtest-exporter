@@ -7,7 +7,7 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/showwin/speedtest-go v1.7.7
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/exp v0.0.0-20240530194437-404ba88c7ed0
+	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc
 	gopkg.in/yaml.v3 v3.0.1
 )
 
