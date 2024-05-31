@@ -3,7 +3,7 @@ module github.com/heathcliff26/speedtest-exporter
 go 1.21
 
 require (
-	github.com/heathcliff26/promremote v1.0.2
+	github.com/heathcliff26/promremote v1.0.3
 	github.com/prometheus/client_golang v1.19.1
 	github.com/showwin/speedtest-go v1.7.7
 	github.com/stretchr/testify v1.9.0
@@ -21,7 +21,7 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.53.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/prometheus/prometheus v0.52.0 // indirect
+	github.com/prometheus/prometheus v0.52.1 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 )
