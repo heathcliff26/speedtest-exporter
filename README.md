@@ -35,7 +35,7 @@ One important functionality is that this projects implements prometheus remote_w
 
 There are different flavors of the image:
 
-| Tag(s)     | Describtion                                                                                                                 |
+| Tag(s)     | Description                                                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **latest** | Last released slim version of the image.                                                                                    |
 | **slim**   | Contains only the speedtest-exporter binary and uses native golang implementation.                                          |
