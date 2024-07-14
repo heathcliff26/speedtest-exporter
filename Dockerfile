@@ -5,6 +5,7 @@ FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.22.5 AS build-stage
 
 ARG BUILDPLATFORM
 ARG TARGETARCH
+ARG RELEASE_VERSION
 
 WORKDIR /app
 
@@ -12,8 +13,9 @@ COPY vendor ./vendor
 COPY go.mod go.sum ./
 COPY cmd ./cmd
 COPY pkg ./pkg
+COPY hack ./hack
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH="${TARGETARCH}" go build -ldflags="-w -s" -o /speedtest-exporter ./cmd/
+RUN --mount=type=bind,target=/app/.git,source=.git GOOS=linux GOARCH="${TARGETARCH}" hack/build.sh
 
 #
 # END build-stage
@@ -24,7 +26,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH="${TARGETARCH}" go build -ldflags="-w -s" -o
 # Combine all outputs, to enable single layer copy for the final image
 FROM scratch AS combine-stage
 
-COPY --from=build-stage /speedtest-exporter /
+COPY --from=build-stage /app/bin/speedtest-exporter /
 
 COPY --from=build-stage /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
