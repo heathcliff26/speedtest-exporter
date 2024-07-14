@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (17.0%)</option>
+				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (17.6%)</option>
 				
 				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.9%)</option>
 				
@@ -74,6 +74,8 @@
 				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (80.0%)</option>
 				
 				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
+				
+				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (73.3%)</option>
 				
 				</select>
 			</div>
@@ -102,19 +104,22 @@ import (
         "github.com/heathcliff26/speedtest-exporter/pkg/collector"
         "github.com/heathcliff26/speedtest-exporter/pkg/config"
         "github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
+        "github.com/heathcliff26/speedtest-exporter/pkg/version"
         "github.com/prometheus/client_golang/prometheus"
         "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
-        configPath string
-        env        bool
+        configPath  string
+        env         bool
+        showVersion bool
 )
 
 // Initialize the logger
 func init() <span class="cov8" title="1">{
         flag.StringVar(&amp;configPath, "config", "", "Optional: Path to config file")
         flag.BoolVar(&amp;env, "env", false, "Used together with -config, when set will expand enviroment variables in config")
+        flag.BoolVar(&amp;showVersion, "version", false, "Show the version information and exit")
 }</span>
 
 // Handle requests to the webroot.
@@ -136,7 +141,12 @@ func createSpeedtest(path string) (speedtest.Speedtest, error) <span class="cov8
 func main() <span class="cov0" title="0">{
         flag.Parse()
 
-        cfg, err := config.LoadConfig(configPath, env)
+        if showVersion </span><span class="cov0" title="0">{
+                fmt.Print(version.Version())
+                os.Exit(0)
+        }</span>
+
+        <span class="cov0" title="0">cfg, err := config.LoadConfig(configPath, env)
         if err != nil </span><span class="cov0" title="0">{
                 slog.Error("Could not load configuration", slog.String("path", configPath), slog.String("err", err.Error()))
                 os.Exit(1)
@@ -718,6 +728,41 @@ func convertBytesToMbits[T Number](bytes T) float64 <span class="cov8" title="1"
 func convertBytesToMB[T Number](bytes T) float64 <span class="cov8" title="1">{
         return float64(bytes) / speedtest.MB
 }</span>
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package version
+
+import (
+        "runtime"
+        "runtime/debug"
+)
+
+const Name = "speedtest-exporter"
+
+var version = "devel"
+
+func Version() string <span class="cov8" title="1">{
+        var commit string
+        buildinfo, _ := debug.ReadBuildInfo()
+        for _, item := range buildinfo.Settings </span><span class="cov0" title="0">{
+                if item.Key == "vcs.revision" </span><span class="cov0" title="0">{
+                        commit = item.Value
+                        break</span>
+                }
+        }
+        <span class="cov8" title="1">if len(commit) &gt; 7 </span><span class="cov0" title="0">{
+                commit = commit[:7]
+        }</span> else<span class="cov8" title="1"> if commit == "" </span><span class="cov8" title="1">{
+                commit = "Unknown"
+        }</span>
+
+        <span class="cov8" title="1">result := Name + ":\n"
+        result += "    Version: " + version + "\n"
+        result += "    Commit:  " + commit + "\n"
+        result += "    Go:      " + runtime.Version() + "\n"
+
+        return result</span>
+}
 </pre>
 		
 		</div>
