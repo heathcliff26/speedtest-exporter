@@ -27,6 +27,7 @@ on:
       - "*.go"
       - "**/*.go"
       - "Dockerfile"
+      - "Dockerfile.cli"
   pull_request:
     branches: ["main"]
   merge_group:
