@@ -20,10 +20,14 @@ jobs:
   lint:
     uses: heathcliff26/ci/.github/workflows/golang-lint.yaml@main
 
+  unit-tests:
+    uses: heathcliff26/ci/.github/workflows/golang-unit-tests.yaml@main
+
   build-slim:
     uses: heathcliff26/ci/.github/workflows/build-container.yaml@main
     needs:
       - lint
+      - unit-tests
     permissions:
       contents: read
       packages: write
@@ -38,6 +42,7 @@ jobs:
     uses: heathcliff26/ci/.github/workflows/build-container.yaml@main
     needs:
       - lint
+      - unit-tests
     permissions:
       contents: read
       packages: write
