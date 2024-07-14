@@ -57,6 +57,8 @@ Usage of speedtest-exporter:
         Optional: Path to config file
   -env
         Used together with -config, when set will expand enviroment variables in config
+  -version
+        Show the version information and exit
 ```
 An example configuration can be found [here](configs/example-config.yaml).
 

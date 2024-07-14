@@ -13,19 +13,22 @@ import (
 	"github.com/heathcliff26/speedtest-exporter/pkg/collector"
 	"github.com/heathcliff26/speedtest-exporter/pkg/config"
 	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
+	"github.com/heathcliff26/speedtest-exporter/pkg/version"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
-	configPath string
-	env        bool
+	configPath  string
+	env         bool
+	showVersion bool
 )
 
 // Initialize the logger
 func init() {
 	flag.StringVar(&configPath, "config", "", "Optional: Path to config file")
 	flag.BoolVar(&env, "env", false, "Used together with -config, when set will expand enviroment variables in config")
+	flag.BoolVar(&showVersion, "version", false, "Show the version information and exit")
 }
 
 // Handle requests to the webroot.
@@ -46,6 +49,11 @@ func createSpeedtest(path string) (speedtest.Speedtest, error) {
 
 func main() {
 	flag.Parse()
+
+	if showVersion {
+		fmt.Print(version.Version())
+		os.Exit(0)
+	}
 
 	cfg, err := config.LoadConfig(configPath, env)
 	if err != nil {

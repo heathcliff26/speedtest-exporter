@@ -5,12 +5,10 @@ CONTAINER_NAME ?= speedtest-exporter
 SLIM_TAG ?= slim
 CLI_TAG ?= cli
 
-GO_BUILD_FLAGS ?= -ldflags="-w -s"
-
 default: build
 
 build:
-	go build $(GO_BUILD_FLAGS) -o bin/speedtest-exporter ./cmd/
+	hack/build.sh
 
 build-slim:
 	podman build -t $(REPOSITORY)/$(CONTAINER_NAME):$(SLIM_TAG) .
