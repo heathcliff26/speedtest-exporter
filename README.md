@@ -35,10 +35,12 @@ One important functionality is that this projects implements prometheus remote_w
 
 There are different flavors of the image:
 
-| Tag(s)           | Describtion                                                                                                                 |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **latest, slim** | Contains only the speedtest-exporter binary and uses native golang implementation.                                          |
-| **cli**          | Alpine based container that also contains the speedtest.net cli client binary. Uses the speedtest.net cli to run the tests. |
+| Tag(s)     | Describtion                                                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **latest** | Last released slim version of the image.                                                                                    |
+| **slim**   | Contains only the speedtest-exporter binary and uses native golang implementation.                                          |
+| **cli**    | Alpine based container that also contains the speedtest.net cli client binary. Uses the speedtest.net cli to run the tests. |
+| **vX.Y.Z** | Released version of the image.                                                                                              |
 
 ## Usage
 
