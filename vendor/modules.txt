@@ -15,8 +15,12 @@ github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/snappy v0.0.4
 ## explicit
 github.com/golang/snappy
-# github.com/heathcliff26/promremote v1.0.4
+# github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc
 ## explicit; go 1.21
+github.com/grafana/regexp
+github.com/grafana/regexp/syntax
+# github.com/heathcliff26/promremote v1.0.5
+## explicit; go 1.21.0
 github.com/heathcliff26/promremote/promremote
 # github.com/klauspost/compress v1.17.9
 ## explicit; go 1.20
@@ -52,8 +56,11 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/prometheus/prometheus v0.53.1
-## explicit; go 1.21
+# github.com/prometheus/prometheus v0.54.1
+## explicit; go 1.21.0
+github.com/prometheus/prometheus/model/exemplar
+github.com/prometheus/prometheus/model/histogram
+github.com/prometheus/prometheus/model/labels
 github.com/prometheus/prometheus/model/timestamp
 github.com/prometheus/prometheus/prompb
 # github.com/showwin/speedtest-go v1.7.8
@@ -71,6 +78,10 @@ golang.org/x/exp/constraints
 ## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/text v0.16.0
+## explicit; go 1.18
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
 # google.golang.org/protobuf v1.34.2
 ## explicit; go 1.20
 google.golang.org/protobuf/encoding/protodelim
