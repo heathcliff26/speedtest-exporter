@@ -1,13 +1,15 @@
 module github.com/heathcliff26/speedtest-exporter
 
-go 1.22
+go 1.22.0
+
+toolchain go1.23.1
 
 require (
-	github.com/heathcliff26/promremote v1.0.5
-	github.com/prometheus/client_golang v1.20.2
-	github.com/showwin/speedtest-go v1.7.8
+	github.com/heathcliff26/promremote v1.0.6
+	github.com/prometheus/client_golang v1.20.4
+	github.com/showwin/speedtest-go v1.7.9
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
