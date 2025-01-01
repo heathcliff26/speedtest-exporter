@@ -63,7 +63,7 @@ github.com/prometheus/prometheus/model/histogram
 github.com/prometheus/prometheus/model/labels
 github.com/prometheus/prometheus/model/timestamp
 github.com/prometheus/prometheus/prompb
-# github.com/showwin/speedtest-go v1.7.9
+# github.com/showwin/speedtest-go v1.7.10
 ## explicit; go 1.19
 github.com/showwin/speedtest-go/speedtest
 github.com/showwin/speedtest-go/speedtest/internal
@@ -72,10 +72,10 @@ github.com/showwin/speedtest-go/speedtest/transport
 ## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/assert/yaml
-# golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
+# golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 ## explicit; go 1.22.0
 golang.org/x/exp/constraints
-# golang.org/x/sys v0.26.0
+# golang.org/x/sys v0.28.0
 ## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
