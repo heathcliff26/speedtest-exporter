@@ -19,6 +19,15 @@ build-cli:
 test:
 	go test -v ./...
 
+lint:
+	golangci-lint run -v
+
+fmt:
+	gofmt -s -w ./cmd ./pkg
+
+validate:
+	hack/validate.sh
+
 update-deps:
 	hack/update-deps.sh
 
@@ -28,5 +37,8 @@ update-deps:
 	build-slim \
 	build-cli \
 	test \
+	lint \
+	fmt \
+	validate \
 	update-deps \
 	$(NULL)
