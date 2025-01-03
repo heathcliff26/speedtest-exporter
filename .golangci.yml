@@ -9,4 +9,5 @@ output:
       path: stdout
   print-issued-lines: true
   print-linter-name: true
+issues:
   uniq-by-line: true
