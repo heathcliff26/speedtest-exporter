@@ -10,5 +10,6 @@ jobs:
   check-links:
     uses: heathcliff26/ci/.github/workflows/link-check.yaml@main
     secrets: inherit
+    permissions: {}
     with:
       exclude-paths: "vendor"
