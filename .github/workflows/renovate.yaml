@@ -27,6 +27,7 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    permissions: {}
     outputs:
       dry-run: ${{ steps.config.outputs.dry-run }}
       log-level: "${{ steps.config.outputs.log-level }}"
@@ -40,6 +41,7 @@ jobs:
   renovate:
     needs: prepare
     uses: heathcliff26/ci/.github/workflows/renovate.yaml@main
+    permissions: {}
     with:
       dry-run: ${{ needs.prepare.outputs.dry-run }}
       log-level: "${{ needs.prepare.outputs.log-level }}"

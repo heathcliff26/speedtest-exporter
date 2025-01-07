@@ -10,5 +10,6 @@ jobs:
   generate-reports:
     uses: heathcliff26/ci/.github/workflows/golang-testcover-report.yaml@main
     secrets: inherit
+    permissions: {}
     with:
       coveralls: true
