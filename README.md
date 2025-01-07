@@ -1,3 +1,9 @@
+[![CI](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/ci.yaml/badge.svg?event=push)](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/ci.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/heathcliff26/speedtest-exporter/badge.svg)](https://coveralls.io/github/heathcliff26/speedtest-exporter)
+[![Editorconfig Check](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/editorconfig-check.yaml/badge.svg?event=push)](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/editorconfig-check.yaml)
+[![Generate go test cover report](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/go-testcover-report.yaml/badge.svg)](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/go-testcover-report.yaml)
+[![Renovate](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/renovate.yaml/badge.svg)](https://github.com/heathcliff26/speedtest-exporter/actions/workflows/renovate.yaml)
+
 # speedtest-exporter
 
 This project is a prometheus exporter for speedtests implemented in go.

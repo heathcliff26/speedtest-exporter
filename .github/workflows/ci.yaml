@@ -39,6 +39,8 @@ jobs:
 
   unit-tests:
     uses: heathcliff26/ci/.github/workflows/golang-unit-tests.yaml@main
+    with:
+      coveralls: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
 
   validate:
     uses: heathcliff26/ci/.github/workflows/golang-build.yaml@main

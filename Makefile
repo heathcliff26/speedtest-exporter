@@ -5,19 +5,20 @@ CONTAINER_NAME ?= speedtest-exporter
 SLIM_TAG ?= slim
 CLI_TAG ?= cli
 
-default: build
-
 build:
 	hack/build.sh
 
-build-slim:
+image-slim:
 	podman build -t $(REPOSITORY)/$(CONTAINER_NAME):$(SLIM_TAG) .
 
-build-cli:
+image-cli:
 	podman build -f Dockerfile.cli -t $(REPOSITORY)/$(CONTAINER_NAME):$(CLI_TAG) .
 
 test:
-	go test -v ./...
+	go test -v -coverprofile=coverprofile.out ./...
+
+coverprofile:
+	hack/coverprofile.sh
 
 lint:
 	golangci-lint run -v
@@ -31,14 +32,19 @@ validate:
 update-deps:
 	hack/update-deps.sh
 
+clean:
+	rm -rf bin coverprofiles coverprofile.out
+
 .PHONY: \
 	default \
 	build \
-	build-slim \
-	build-cli \
+	image-slim \
+	image-cli \
 	test \
+	coverprofile \
 	lint \
 	fmt \
 	validate \
 	update-deps \
+	clean \
 	$(NULL)
