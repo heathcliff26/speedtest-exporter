@@ -166,9 +166,9 @@ func (c *Client) collect() ([]prompb.TimeSeries, error) {
 		} else if m.Gauge != nil {
 			value = m.Gauge.GetValue()
 		} else if m.Untyped != nil {
-			value = m.Counter.GetValue()
+			value = m.Untyped.GetValue()
 		} else {
-			return nil, fmt.Errorf("Unknown metric type")
+			return nil, fmt.Errorf("unknown metric type")
 		}
 		ts.Samples = []prompb.Sample{
 			{
