@@ -34,7 +34,7 @@ type ErrRemoteWriteFailed struct {
 	Body       string
 }
 
-func NewErrRemoteWriteFailed(status int, resBody io.ReadCloser) *ErrRemoteWriteFailed {
+func NewErrRemoteWriteFailed(status int, resBody io.ReadCloser) error {
 	var body string
 	b, err := io.ReadAll(resBody)
 	if err != nil {
