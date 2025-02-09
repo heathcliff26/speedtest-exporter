@@ -35,7 +35,7 @@ One important functionality is that this projects implements prometheus remote_w
 | Container Registry                                                                                      | Image                                       |
 | ------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | [Github Container](https://github.com/users/heathcliff26/packages/container/package/speedtest-exporter) | `ghcr.io/heathcliff26/speedtest-exporter`   |
-| [Docker Hub](https://hub.docker.com/repository/docker/heathcliff26/speedtest-exporter)                  | `docker.io/heathcliff26/speedtest-exporter` |
+| [Docker Hub](https://hub.docker.com/r/heathcliff26/speedtest-exporter)                  | `docker.io/heathcliff26/speedtest-exporter` |
 
 ### Tags
 
