@@ -75,7 +75,7 @@
 				
 				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
 				
-				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (73.3%)</option>
+				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (80.0%)</option>
 				
 				</select>
 			</div>
@@ -739,12 +739,11 @@ import (
 
 const Name = "speedtest-exporter"
 
-var version = "devel"
-
+// Return a formated string containing the version, git commit and go version the app was compiled with.
 func Version() string <span class="cov8" title="1">{
         var commit string
         buildinfo, _ := debug.ReadBuildInfo()
-        for _, item := range buildinfo.Settings </span><span class="cov0" title="0">{
+        for _, item := range buildinfo.Settings </span><span class="cov8" title="1">{
                 if item.Key == "vcs.revision" </span><span class="cov0" title="0">{
                         commit = item.Value
                         break</span>
@@ -757,7 +756,7 @@ func Version() string <span class="cov8" title="1">{
         }</span>
 
         <span class="cov8" title="1">result := Name + ":\n"
-        result += "    Version: " + version + "\n"
+        result += "    Version: " + buildinfo.Main.Version + "\n"
         result += "    Commit:  " + commit + "\n"
         result += "    Go:      " + runtime.Version() + "\n"
 
