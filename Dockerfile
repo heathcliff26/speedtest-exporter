@@ -1,21 +1,16 @@
 ###############################################################################
 # BEGIN build-stage
 # Compile the binary
-FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.23.5 AS build-stage
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.24.0 AS build-stage
 
 ARG BUILDPLATFORM
 ARG TARGETARCH
-ARG RELEASE_VERSION
 
 WORKDIR /app
 
-COPY vendor ./vendor
-COPY go.mod go.sum ./
-COPY cmd ./cmd
-COPY pkg ./pkg
-COPY hack ./hack
+COPY . ./
 
-RUN --mount=type=bind,target=/app/.git,source=.git GOOS=linux GOARCH="${TARGETARCH}" hack/build.sh
+RUN GOOS=linux GOARCH="${TARGETARCH}" hack/build.sh
 
 #
 # END build-stage

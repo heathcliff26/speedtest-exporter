@@ -7,8 +7,7 @@ import (
 
 const Name = "speedtest-exporter"
 
-var version = "devel"
-
+// Return a formated string containing the version, git commit and go version the app was compiled with.
 func Version() string {
 	var commit string
 	buildinfo, _ := debug.ReadBuildInfo()
@@ -25,7 +24,7 @@ func Version() string {
 	}
 
 	result := Name + ":\n"
-	result += "    Version: " + version + "\n"
+	result += "    Version: " + buildinfo.Main.Version + "\n"
 	result += "    Commit:  " + commit + "\n"
 	result += "    Go:      " + runtime.Version() + "\n"
 
