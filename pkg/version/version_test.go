@@ -2,6 +2,7 @@ package version
 
 import (
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"testing"
 
@@ -15,11 +16,13 @@ func TestVersion(t *testing.T) {
 
 	assert := assert.New(t)
 
+	buildinfo, _ := debug.ReadBuildInfo()
+
 	if !assert.Equal(5, len(lines), "Should have enough lines") {
 		t.FailNow()
 	}
 	assert.Contains(lines[0], Name)
-	assert.Contains(lines[1], version)
+	assert.Contains(lines[1], buildinfo.Main.Version)
 
 	commit := strings.Split(lines[2], ":")
 	assert.NotEmpty(strings.TrimSpace(commit[1]))

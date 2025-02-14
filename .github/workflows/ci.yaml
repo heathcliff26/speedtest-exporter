@@ -67,7 +67,6 @@ jobs:
       tag: "${{ inputs.tag == 'rolling' && 'slim' || inputs.tag == '' && 'slim' || inputs.tag }}"
       tags: "${{ inputs.latest == true && 'type=raw,value=latest' || '' }}"
       dry-run: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.dry-run == 'true' }}
-      build-args: "RELEASE_VERSION=${{ inputs.tag == '' && 'rolling' || inputs.tag }}"
     secrets: inherit
 
   build-cli:
@@ -83,5 +82,4 @@ jobs:
       tag: "${{ inputs.tag == 'rolling' && 'cli' || inputs.tag == '' && 'cli' || inputs.tag }}${{ inputs.tag != 'rolling' && inputs.tag != '' && '-cli' || '' }}"
       tags: ""
       dry-run: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.dry-run == 'true' }}
-      build-args: "RELEASE_VERSION=${{ inputs.tag == '' && 'rolling' || inputs.tag }}"
     secrets: inherit

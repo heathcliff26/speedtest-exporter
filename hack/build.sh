@@ -11,11 +11,6 @@ GOARCH="${GOARCH:-$(go env GOARCH)}"
 
 GO_LD_FLAGS="${GO_LD_FLAGS:-"-s"}"
 
-if [ "${RELEASE_VERSION}" != "" ]; then
-    echo "Building release version ${RELEASE_VERSION}"
-    GO_LD_FLAGS+=" -X github.com/heathcliff26/speedtest-exporter/pkg/version.version=${RELEASE_VERSION}"
-fi
-
 output_name="${bin_dir}/speedtest-exporter"
 if [ "${GOOS}" == "windows" ]; then
     output_name="${output_name}.exe"
