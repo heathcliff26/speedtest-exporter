@@ -63,19 +63,21 @@
 				
 				<option value="file3">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (82.5%)</option>
 				
-				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
+				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/duration.go (90.9%)</option>
 				
-				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (0.0%)</option>
+				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
 				
-				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (76.9%)</option>
+				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (0.0%)</option>
 				
-				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (63.0%)</option>
+				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (76.9%)</option>
 				
-				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (80.0%)</option>
+				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (63.0%)</option>
 				
-				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
+				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (80.0%)</option>
 				
-				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (80.0%)</option>
+				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
+				
+				<option value="file11">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (80.0%)</option>
 				
 				</select>
 			</div>
@@ -99,6 +101,7 @@ import (
         "net/http"
         "os"
         "strconv"
+        "time"
 
         "github.com/heathcliff26/promremote/promremote"
         "github.com/heathcliff26/speedtest-exporter/pkg/collector"
@@ -158,7 +161,7 @@ func main() <span class="cov0" title="0">{
                 os.Exit(1)
         }</span>
 
-        <span class="cov0" title="0">collector, err := collector.NewCollector(cfg.Cache, s)
+        <span class="cov0" title="0">collector, err := collector.NewCollector(time.Duration(cfg.Cache), s)
         if err != nil </span><span class="cov0" title="0">{
                 slog.Error("Failed to create collector", "err", err)
                 os.Exit(1)
@@ -183,7 +186,7 @@ func main() <span class="cov0" title="0">{
 
                 <span class="cov0" title="0">slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
                 rwQuit := make(chan bool)
-                rwClient.Run(cfg.Cache, rwQuit)
+                rwClient.Run(time.Duration(cfg.Cache), rwQuit)
                 defer func() </span><span class="cov0" title="0">{
                         rwQuit &lt;- true
                         close(rwQuit)
@@ -325,13 +328,13 @@ import (
         "time"
 
         "github.com/heathcliff26/promremote/promremote"
-        "gopkg.in/yaml.v3"
+        "sigs.k8s.io/yaml"
 )
 
 const (
         DEFAULT_LOG_LEVEL = "info"
         DEFAULT_PORT      = 8080
-        DEFAULT_CACHE     = time.Duration(5 * time.Minute)
+        DEFAULT_CACHE     = Duration(5 * time.Minute)
 )
 
 var logLevel *slog.LevelVar
@@ -347,19 +350,19 @@ func init() <span class="cov8" title="1">{
 }</span>
 
 type Config struct {
-        LogLevel     string        `yaml:"logLevel,omitempty"`
-        Port         int           `yaml:"port,omitempty"`
-        Cache        time.Duration `yaml:"cache,omitempty"`
-        SpeedtestCLI string        `yaml:"speedtestCLI,omitempty"`
-        Remote       RemoteConfig  `yaml:"remote,omitempty"`
+        LogLevel     string       `json:"logLevel,omitempty"`
+        Port         int          `json:"port,omitempty"`
+        Cache        Duration     `json:"cache,omitempty"`
+        SpeedtestCLI string       `json:"speedtestCLI,omitempty"`
+        Remote       RemoteConfig `json:"remote,omitempty"`
 }
 
 type RemoteConfig struct {
-        Enable   bool   `yaml:"enable"`
-        URL      string `yaml:"url"`
-        Instance string `yaml:"instance"`
-        Username string `yaml:"username,omitempty"`
-        Password string `yaml:"password,omitempty"`
+        Enable   bool   `json:"enable"`
+        URL      string `json:"url"`
+        Instance string `json:"instance"`
+        Username string `json:"username,omitempty"`
+        Password string `json:"password,omitempty"`
 }
 
 // Returns a Config with default values set
@@ -445,6 +448,42 @@ func setLogLevel(level string) error <span class="cov8" title="1">{
 		
 		<pre class="file" id="file4" style="display: none">package config
 
+import (
+        "encoding/json"
+        "time"
+)
+
+// Custom wrapper around time.Duration to implement json marshalling
+type Duration time.Duration
+
+func (d *Duration) UnmarshalJSON(b []byte) error <span class="cov8" title="1">{
+        var s string
+        err := json.Unmarshal(b, &amp;s)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">res, err := time.ParseDuration(s)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">*d = Duration(res)
+
+        return nil</span>
+}
+
+func (d Duration) MarshalJSON() ([]byte, error) <span class="cov8" title="1">{
+        return json.Marshal(d.String())
+}</span>
+
+func (d Duration) String() string <span class="cov8" title="1">{
+        return time.Duration(d).String()
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package config
+
 import "time"
 
 type ErrUnknownLogLevel struct {
@@ -464,7 +503,7 @@ func (e *ErrInvalidInterval) Error() string <span class="cov0" title="0">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">package speedtest
+		<pre class="file" id="file6" style="display: none">package speedtest
 
 type MockSpeedtest struct {
         Callback func()
@@ -483,7 +522,7 @@ func (s *MockSpeedtest) Speedtest() *SpeedtestResult <span class="cov0" title="0
 }
 </pre>
 		
-		<pre class="file" id="file6" style="display: none">package speedtest
+		<pre class="file" id="file7" style="display: none">package speedtest
 
 import (
         "bytes"
@@ -562,7 +601,7 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1"
 }
 </pre>
 		
-		<pre class="file" id="file7" style="display: none">package speedtest
+		<pre class="file" id="file8" style="display: none">package speedtest
 
 import (
         "log/slog"
@@ -629,7 +668,7 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">
 }
 </pre>
 		
-		<pre class="file" id="file8" style="display: none">package speedtest
+		<pre class="file" id="file9" style="display: none">package speedtest
 
 type Speedtest interface {
         Speedtest() *SpeedtestResult
@@ -708,7 +747,7 @@ func (r *SpeedtestResult) Success() bool <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file9" style="display: none">package speedtest
+		<pre class="file" id="file10" style="display: none">package speedtest
 
 import (
         "github.com/showwin/speedtest-go/speedtest"
@@ -730,7 +769,7 @@ func convertBytesToMB[T Number](bytes T) float64 <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file10" style="display: none">package version
+		<pre class="file" id="file11" style="display: none">package version
 
 import (
         "runtime"
