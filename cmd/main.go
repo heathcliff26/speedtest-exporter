@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/heathcliff26/promremote/promremote"
 	"github.com/heathcliff26/speedtest-exporter/pkg/collector"
@@ -67,7 +68,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	collector, err := collector.NewCollector(cfg.Cache, s)
+	collector, err := collector.NewCollector(time.Duration(cfg.Cache), s)
 	if err != nil {
 		slog.Error("Failed to create collector", "err", err)
 		os.Exit(1)
@@ -92,7 +93,7 @@ func main() {
 
 		slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
 		rwQuit := make(chan bool)
-		rwClient.Run(cfg.Cache, rwQuit)
+		rwClient.Run(time.Duration(cfg.Cache), rwQuit)
 		defer func() {
 			rwQuit <- true
 			close(rwQuit)

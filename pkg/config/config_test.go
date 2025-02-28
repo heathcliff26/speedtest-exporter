@@ -14,13 +14,13 @@ func TestValidConfigs(t *testing.T) {
 	c1 := Config{
 		LogLevel:     "warn",
 		Port:         80,
-		Cache:        time.Duration(time.Minute),
+		Cache:        Duration(time.Minute),
 		SpeedtestCLI: "/path/to/speedtest",
 	}
 	c2 := Config{
 		LogLevel: "debug",
 		Port:     2080,
-		Cache:    time.Duration(30 * time.Minute),
+		Cache:    Duration(30 * time.Minute),
 		Remote: RemoteConfig{
 			Enable:   true,
 			URL:      "https://example.org/",
@@ -91,12 +91,12 @@ func TestInvalidConfig(t *testing.T) {
 		{
 			Name:  "NotYaml",
 			Path:  "testdata/not-a-config.txt",
-			Error: "*yaml.TypeError",
+			Error: "*fmt.wrapError",
 		},
 		{
 			Name:  "InvalidCache",
 			Path:  "testdata/invalid-config-1.yaml",
-			Error: "*yaml.TypeError",
+			Error: "*fmt.wrapError",
 		},
 		{
 			Name:  "MissingRemoteEndpoint",
@@ -128,7 +128,7 @@ func TestEnvSubstitution(t *testing.T) {
 	c := Config{
 		LogLevel: "debug",
 		Port:     2080,
-		Cache:    time.Duration(time.Minute),
+		Cache:    Duration(time.Minute),
 	}
 	t.Setenv("SPEEDTEST_TEST_LOG_LEVEL", c.LogLevel)
 	t.Setenv("SPEEDTEST_TEST_PORT", strconv.Itoa(c.Port))
