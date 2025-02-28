@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/heathcliff26/promremote/promremote"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/yaml"
 )
 
 const (
 	DEFAULT_LOG_LEVEL = "info"
 	DEFAULT_PORT      = 8080
-	DEFAULT_CACHE     = time.Duration(5 * time.Minute)
+	DEFAULT_CACHE     = Duration(5 * time.Minute)
 )
 
 var logLevel *slog.LevelVar
@@ -29,19 +29,19 @@ func init() {
 }
 
 type Config struct {
-	LogLevel     string        `yaml:"logLevel,omitempty"`
-	Port         int           `yaml:"port,omitempty"`
-	Cache        time.Duration `yaml:"cache,omitempty"`
-	SpeedtestCLI string        `yaml:"speedtestCLI,omitempty"`
-	Remote       RemoteConfig  `yaml:"remote,omitempty"`
+	LogLevel     string       `json:"logLevel,omitempty"`
+	Port         int          `json:"port,omitempty"`
+	Cache        Duration     `json:"cache,omitempty"`
+	SpeedtestCLI string       `json:"speedtestCLI,omitempty"`
+	Remote       RemoteConfig `json:"remote,omitempty"`
 }
 
 type RemoteConfig struct {
-	Enable   bool   `yaml:"enable"`
-	URL      string `yaml:"url"`
-	Instance string `yaml:"instance"`
-	Username string `yaml:"username,omitempty"`
-	Password string `yaml:"password,omitempty"`
+	Enable   bool   `json:"enable"`
+	URL      string `json:"url"`
+	Instance string `json:"instance"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 // Returns a Config with default values set
