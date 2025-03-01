@@ -19,7 +19,7 @@ github.com/golang/snappy
 ## explicit; go 1.21
 github.com/grafana/regexp
 github.com/grafana/regexp/syntax
-# github.com/heathcliff26/promremote v1.0.9
+# github.com/heathcliff26/promremote v1.0.10
 ## explicit; go 1.23.0
 github.com/heathcliff26/promremote/promremote
 # github.com/klauspost/compress v1.17.11
@@ -37,8 +37,8 @@ github.com/munnerz/goautoneg
 # github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/prometheus/client_golang v1.20.5
-## explicit; go 1.20
+# github.com/prometheus/client_golang v1.21.0
+## explicit; go 1.21
 github.com/prometheus/client_golang/internal/github.com/golang/gddo/httputil
 github.com/prometheus/client_golang/internal/github.com/golang/gddo/httputil/header
 github.com/prometheus/client_golang/prometheus
@@ -47,7 +47,7 @@ github.com/prometheus/client_golang/prometheus/promhttp
 # github.com/prometheus/client_model v0.6.1
 ## explicit; go 1.19
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.61.0
+# github.com/prometheus/common v0.62.0
 ## explicit; go 1.21
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/model
@@ -56,7 +56,7 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/prometheus/prometheus v0.301.0
+# github.com/prometheus/prometheus v0.302.1
 ## explicit; go 1.22.7
 github.com/prometheus/prometheus/model/exemplar
 github.com/prometheus/prometheus/model/histogram
@@ -72,10 +72,10 @@ github.com/showwin/speedtest-go/speedtest/transport
 ## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/assert/yaml
-# golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c
-## explicit; go 1.22.0
+# golang.org/x/exp v0.0.0-20250228200357-dead58393ab7
+## explicit; go 1.23.0
 golang.org/x/exp/constraints
-# golang.org/x/sys v0.28.0
+# golang.org/x/sys v0.29.0
 ## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -83,7 +83,7 @@ golang.org/x/sys/windows
 ## explicit; go 1.18
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
-# google.golang.org/protobuf v1.36.0
+# google.golang.org/protobuf v1.36.4
 ## explicit; go 1.21
 google.golang.org/protobuf/encoding/protodelim
 google.golang.org/protobuf/encoding/prototext
