@@ -3,11 +3,11 @@ module github.com/heathcliff26/speedtest-exporter
 go 1.24.0
 
 require (
-	github.com/heathcliff26/promremote v1.0.10
-	github.com/prometheus/client_golang v1.21.0
+	github.com/heathcliff26/promremote v1.0.11
+	github.com/prometheus/client_golang v1.21.1
 	github.com/showwin/speedtest-go v1.7.10
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7
+	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -16,7 +16,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
+	github.com/golang/snappy v1.0.0 // indirect
 	github.com/grafana/regexp v0.0.0-20240518133315-a468a5bfb3bc // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
