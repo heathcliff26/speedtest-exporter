@@ -1,13 +1,32 @@
----
+version: "2"
 run:
   timeout: 1m
-  tests: true
   modules-download-mode: readonly
+  tests: true
 output:
   formats:
-    - format: "colored-line-number"
+    text:
       path: stdout
-  print-issued-lines: true
-  print-linter-name: true
+      print-linter-name: true
+      print-issued-lines: true
+linters:
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
   uniq-by-line: true
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
