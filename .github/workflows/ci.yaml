@@ -39,6 +39,12 @@ jobs:
     permissions:
       contents: read
 
+  gosec:
+    uses: heathcliff26/ci/.github/workflows/golang-gosec.yaml@main
+    permissions:
+      contents: read
+      security-events: write
+
   unit-tests:
     uses: heathcliff26/ci/.github/workflows/golang-unit-tests.yaml@main
     permissions:
