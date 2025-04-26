@@ -41,6 +41,10 @@ validate:
 update-deps:
 	hack/update-deps.sh
 
+# Scan code for vulnerabilities using gosec
+gosec:
+	gosec ./...
+
 # Clean build artifacts
 clean:
 	rm -rf bin coverprofiles coverprofile.out
@@ -64,6 +68,7 @@ help:
 	fmt \
 	validate \
 	update-deps \
+	gosec \
 	clean \
 	help \
 	$(NULL)
