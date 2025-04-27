@@ -67,6 +67,7 @@ func LoadConfig(path string, env bool) (Config, error) {
 		return c, nil
 	}
 
+	// #nosec G304: Local users can decide on the config file path freely.
 	f, err := os.ReadFile(path)
 	if err != nil {
 		return Config{}, err

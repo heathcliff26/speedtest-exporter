@@ -100,12 +100,19 @@ func main() {
 		}()
 	}
 
-	http.HandleFunc("/", ServerRootHandler)
-	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+	router := http.NewServeMux()
+	router.HandleFunc("/", ServerRootHandler)
+	router.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 
-	addr := ":" + strconv.Itoa(cfg.Port)
-	slog.Info("Starting http server", slog.String("addr", addr))
-	err = http.ListenAndServe(addr, nil)
+	server := &http.Server{
+		Addr:         ":" + strconv.Itoa(cfg.Port),
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	slog.Info("Starting http server", slog.String("addr", server.Addr))
+	err = server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		slog.Error("Failed to start http server", "err", err)
 		os.Exit(1)
