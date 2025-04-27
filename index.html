@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (17.6%)</option>
+				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (17.3%)</option>
 				
 				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.9%)</option>
 				
@@ -193,12 +193,19 @@ func main() <span class="cov0" title="0">{
                 }</span>()
         }
 
-        <span class="cov0" title="0">http.HandleFunc("/", ServerRootHandler)
-        http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+        <span class="cov0" title="0">router := http.NewServeMux()
+        router.HandleFunc("/", ServerRootHandler)
+        router.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 
-        addr := ":" + strconv.Itoa(cfg.Port)
-        slog.Info("Starting http server", slog.String("addr", addr))
-        err = http.ListenAndServe(addr, nil)
+        server := &amp;http.Server{
+                Addr:         ":" + strconv.Itoa(cfg.Port),
+                Handler:      router,
+                ReadTimeout:  10 * time.Second,
+                WriteTimeout: 10 * time.Second,
+        }
+
+        slog.Info("Starting http server", slog.String("addr", server.Addr))
+        err = server.ListenAndServe()
         if err != nil &amp;&amp; !errors.Is(err, http.ErrServerClosed) </span><span class="cov0" title="0">{
                 slog.Error("Failed to start http server", "err", err)
                 os.Exit(1)
@@ -388,6 +395,7 @@ func LoadConfig(path string, env bool) (Config, error) <span class="cov8" title=
                 return c, nil
         }</span>
 
+        // #nosec G304: Local users can decide on the config file path freely.
         <span class="cov8" title="1">f, err := os.ReadFile(path)
         if err != nil </span><span class="cov8" title="1">{
                 return Config{}, err
