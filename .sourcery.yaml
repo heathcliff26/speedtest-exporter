@@ -1,0 +1,7 @@
+---
+ignore:
+  - vendor/*
+github:
+  request_review:
+    origin: owner
+    forked: author
