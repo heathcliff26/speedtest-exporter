@@ -1,3 +1,4 @@
+---
 # Log level of the application
 logLevel: "info"
 
@@ -11,7 +12,7 @@ speedtestCLI: ""
 # Configure remote_write behaviour
 remote:
   # Enable remote write, when false this part of the config will be ignored
-  enable: true
+  enable: false
   # URL to prometheus remote_write endpoint
   url: ""
   # Name of the instance, used to label metrics when performing remote_write. Defaults to hostname when empty
