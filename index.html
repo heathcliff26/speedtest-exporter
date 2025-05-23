@@ -69,11 +69,11 @@
 				
 				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (0.0%)</option>
 				
-				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (76.9%)</option>
+				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (78.6%)</option>
 				
-				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (63.0%)</option>
+				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (65.5%)</option>
 				
-				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (80.0%)</option>
+				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (100.0%)</option>
 				
 				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
 				
@@ -305,7 +305,7 @@ func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" t
         var up float64
         if result.Success() </span><span class="cov8" title="1">{
                 up = 1
-                labelValues := []string{result.ClientIp(), result.ClientIsp()}
+                labelValues := []string{result.ClientIP(), result.ClientISP()}
                 ch &lt;- prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, result.JitterLatency(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(pingDesc, prometheus.GaugeValue, result.Ping(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(downloadSpeedDesc, prometheus.GaugeValue, result.DownloadSpeed(), labelValues...)
@@ -538,6 +538,8 @@ import (
         "errors"
         "log/slog"
         "os/exec"
+        "strconv"
+        "time"
 )
 
 type SpeedtestCLI struct {
@@ -572,6 +574,8 @@ var makeCmd = func(path string) *exec.Cmd <span class="cov0" title="0">{
 
 // Execute the speedtest-cli binary and parse the result
 func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1">{
+        start := time.Now()
+
         cmd := makeCmd(s.Path())
         var stdout, stderr bytes.Buffer
         cmd.Stdout = &amp;stdout
@@ -593,19 +597,11 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1"
         uploadMbps := convertBytesToMbits(out.Upload.Bandwidth)
         dataUsed := convertBytesToMB(out.Download.Bytes) + convertBytesToMB(out.Upload.Bytes)
 
-        slog.Info("Successfully ran speedtest", slog.Group("result"),
-                slog.Float64("jitterLatency", out.Ping.Jitter),
-                slog.Float64("ping", out.Ping.Latency),
-                slog.Float64("downloadSpeed", downloadMbps),
-                slog.Float64("uploadSpeed", uploadMbps),
-                slog.Float64("dataUsed", dataUsed),
-                slog.Int("serverId", out.Server.Id),
-                slog.String("serverHost", out.Server.Host),
-                slog.String("isp", out.ISP),
-                slog.String("IP", out.Interface.ExternalIP),
-        )
+        res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP)
 
-        return NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, out.ISP, out.Interface.ExternalIP)</span>
+        printSuccessMessage(res, time.Since(start))
+
+        return res</span>
 }
 </pre>
 		
@@ -613,6 +609,7 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1"
 
 import (
         "log/slog"
+        "time"
 
         "github.com/showwin/speedtest-go/speedtest"
 )
@@ -627,7 +624,9 @@ func NewSpeedtest() *SpeedtestGo <span class="cov8" title="1">{
 
 // Use the speedtest-go api to run a speedtest and parse the result
 func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">{
-        var client = speedtest.New()
+        start := time.Now()
+
+        client := speedtest.New()
 
         serverList, err := client.FetchServers()
         if err != nil </span><span class="cov0" title="0">{
@@ -660,19 +659,11 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">
         uploadMbps := convertBytesToMbits(server.ULSpeed)
         dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
 
-        slog.Info("Successfully ran speedtest", slog.Group("result"),
-                slog.Int64("jitterLatency", server.Jitter.Milliseconds()),
-                slog.Int64("ping", server.Latency.Milliseconds()),
-                slog.Float64("downloadSpeed", downloadMbps),
-                slog.Float64("uploadSpeed", uploadMbps),
-                slog.Float64("dataUsed", dataUsed),
-                slog.String("serverId", server.ID),
-                slog.String("serverHost", server.Host),
-                slog.String("isp", user.Isp),
-                slog.String("IP", user.IP),
-        )
+        res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP)
 
-        return NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, user.Isp, user.IP)</span>
+        printSuccessMessage(res, time.Since(start))
+
+        return res</span>
 }
 </pre>
 		
@@ -688,8 +679,10 @@ type SpeedtestResult struct {
         downloadSpeed float64 // Mbit/s
         uploadSpeed   float64 // Mbit/s
         dataUsed      float64 // MB
-        clientIsp     string
-        clientIp      string
+        serverID      string
+        serverHost    string
+        clientISP     string
+        clientIP      string
         success       bool
 }
 
@@ -701,26 +694,28 @@ func NewFailedSpeedtestResult() *SpeedtestResult <span class="cov8" title="1">{
 }</span>
 
 // Create a new SpeedtestResult from a successfull speedrun
-func NewSpeedtestResult(jitterLatency float64, ping float64, downloadSpeed float64, uploadSpeed float64, dataUsed float64, clientIsp string, clientIp string) *SpeedtestResult <span class="cov8" title="1">{
+func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string) *SpeedtestResult <span class="cov8" title="1">{
         return &amp;SpeedtestResult{
                 jitterLatency: jitterLatency,
                 ping:          ping,
                 downloadSpeed: downloadSpeed,
                 uploadSpeed:   uploadSpeed,
                 dataUsed:      dataUsed,
-                clientIsp:     clientIsp,
-                clientIp:      clientIp,
+                serverID:      serverID,
+                serverHost:    serverHost,
+                clientISP:     clientISP,
+                clientIP:      clientIP,
                 success:       true,
         }
 }</span>
 
 // Jitter latency of ping in ms
-func (r *SpeedtestResult) JitterLatency() float64 <span class="cov0" title="0">{
+func (r *SpeedtestResult) JitterLatency() float64 <span class="cov8" title="1">{
         return r.jitterLatency
 }</span>
 
 // Ping in ms
-func (r *SpeedtestResult) Ping() float64 <span class="cov0" title="0">{
+func (r *SpeedtestResult) Ping() float64 <span class="cov8" title="1">{
         return r.ping
 }</span>
 
@@ -739,14 +734,24 @@ func (r *SpeedtestResult) DataUsed() float64 <span class="cov8" title="1">{
         return r.dataUsed
 }</span>
 
+// ID of the speedtest server used for the test
+func (r *SpeedtestResult) ServerID() string <span class="cov8" title="1">{
+        return r.serverID
+}</span>
+
+// Name of the speedtest server used for the test
+func (r *SpeedtestResult) ServerHost() string <span class="cov8" title="1">{
+        return r.serverHost
+}</span>
+
 // ISP name of the client/connection
-func (r *SpeedtestResult) ClientIsp() string <span class="cov8" title="1">{
-        return r.clientIsp
+func (r *SpeedtestResult) ClientISP() string <span class="cov8" title="1">{
+        return r.clientISP
 }</span>
 
 // Public IP of the client/connection
-func (r *SpeedtestResult) ClientIp() string <span class="cov8" title="1">{
-        return r.clientIp
+func (r *SpeedtestResult) ClientIP() string <span class="cov8" title="1">{
+        return r.clientIP
 }</span>
 
 // Indicates if the test was successfull
@@ -758,6 +763,9 @@ func (r *SpeedtestResult) Success() bool <span class="cov8" title="1">{
 		<pre class="file" id="file10" style="display: none">package speedtest
 
 import (
+        "log/slog"
+        "time"
+
         "github.com/showwin/speedtest-go/speedtest"
         "golang.org/x/exp/constraints"
 )
@@ -774,6 +782,22 @@ func convertBytesToMbits[T Number](bytes T) float64 <span class="cov8" title="1"
 // Convert unit bytes to megabytes
 func convertBytesToMB[T Number](bytes T) float64 <span class="cov8" title="1">{
         return float64(bytes) / speedtest.MB
+}</span>
+
+// Print the log message for a successful speedtest
+func printSuccessMessage(res *SpeedtestResult, elapsedTime time.Duration) <span class="cov8" title="1">{
+        slog.Info("Successfully ran speedtest",
+                slog.Float64("jitterLatency", res.JitterLatency()),
+                slog.Float64("ping", res.Ping()),
+                slog.Float64("downloadSpeed", res.DownloadSpeed()),
+                slog.Float64("uploadSpeed", res.UploadSpeed()),
+                slog.Float64("dataUsed", res.DataUsed()),
+                slog.String("serverID", res.ServerID()),
+                slog.String("serverHost", res.ServerHost()),
+                slog.String("isp", res.ClientISP()),
+                slog.String("ip", res.ClientIP()),
+                slog.Duration("took", elapsedTime),
+        )
 }</span>
 </pre>
 		
