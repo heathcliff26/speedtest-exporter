@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidConfigs(t *testing.T) {
@@ -69,12 +70,8 @@ func TestValidConfigs(t *testing.T) {
 		t.Run(tCase.Name, func(t *testing.T) {
 			c, err := LoadConfig(tCase.Path, false)
 
-			assert := assert.New(t)
-
-			if !assert.Nil(err) {
-				t.Fatalf("Failed to load config: %v", err)
-			}
-			assert.Equal(tCase.Result, c)
+			require.NoError(t, err, "Should load config")
+			assert.Equal(t, tCase.Result, c)
 		})
 	}
 }
@@ -112,14 +109,12 @@ func TestInvalidConfig(t *testing.T) {
 
 	for _, tCase := range tMatrix {
 		t.Run(tCase.Name, func(t *testing.T) {
+			require := require.New(t)
+
 			_, err := LoadConfig(tCase.Path, false)
 
-			if !assert.Error(t, err) {
-				t.Fatal("Did not receive an error")
-			}
-			if !assert.Equal(t, tCase.Error, reflect.TypeOf(err).String()) {
-				t.Fatalf("Received invalid error: %v", err)
-			}
+			require.Error(err, "Should return an error")
+			require.Equal(tCase.Error, reflect.TypeOf(err).String(), "Should receive the expected error")
 		})
 	}
 }
@@ -138,7 +133,7 @@ func TestEnvSubstitution(t *testing.T) {
 
 	assert := assert.New(t)
 
-	assert.Nil(err)
+	assert.NoError(err)
 	assert.Equal(c, res)
 }
 
@@ -169,13 +164,9 @@ func TestSetLogLevel(t *testing.T) {
 		t.Run(tCase.Name, func(t *testing.T) {
 			err := setLogLevel(tCase.Name)
 
-			assert := assert.New(t)
-
-			if !assert.Equal(tCase.Error, err) {
-				t.Fatalf("Received invalid error: %v", err)
-			}
+			require.Equal(t, tCase.Error, err, "Should return the expected error")
 			if err == nil {
-				assert.Equal(tCase.Level, logLevel.Level())
+				assert.Equal(t, tCase.Level, logLevel.Level())
 			}
 		})
 	}
