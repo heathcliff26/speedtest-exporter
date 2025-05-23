@@ -6,6 +6,8 @@ import (
 	"errors"
 	"log/slog"
 	"os/exec"
+	"strconv"
+	"time"
 )
 
 type SpeedtestCLI struct {
@@ -40,6 +42,8 @@ var makeCmd = func(path string) *exec.Cmd {
 
 // Execute the speedtest-cli binary and parse the result
 func (s *SpeedtestCLI) Speedtest() *SpeedtestResult {
+	start := time.Now()
+
 	cmd := makeCmd(s.Path())
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -61,17 +65,9 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult {
 	uploadMbps := convertBytesToMbits(out.Upload.Bandwidth)
 	dataUsed := convertBytesToMB(out.Download.Bytes) + convertBytesToMB(out.Upload.Bytes)
 
-	slog.Info("Successfully ran speedtest", slog.Group("result"),
-		slog.Float64("jitterLatency", out.Ping.Jitter),
-		slog.Float64("ping", out.Ping.Latency),
-		slog.Float64("downloadSpeed", downloadMbps),
-		slog.Float64("uploadSpeed", uploadMbps),
-		slog.Float64("dataUsed", dataUsed),
-		slog.Int("serverId", out.Server.Id),
-		slog.String("serverHost", out.Server.Host),
-		slog.String("isp", out.ISP),
-		slog.String("IP", out.Interface.ExternalIP),
-	)
+	res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP)
 
-	return NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, out.ISP, out.Interface.ExternalIP)
+	printSuccessMessage(res, time.Since(start))
+
+	return res
 }

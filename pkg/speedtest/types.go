@@ -10,8 +10,10 @@ type SpeedtestResult struct {
 	downloadSpeed float64 // Mbit/s
 	uploadSpeed   float64 // Mbit/s
 	dataUsed      float64 // MB
-	clientIsp     string
-	clientIp      string
+	serverID      string
+	serverHost    string
+	clientISP     string
+	clientIP      string
 	success       bool
 }
 
@@ -23,15 +25,17 @@ func NewFailedSpeedtestResult() *SpeedtestResult {
 }
 
 // Create a new SpeedtestResult from a successfull speedrun
-func NewSpeedtestResult(jitterLatency float64, ping float64, downloadSpeed float64, uploadSpeed float64, dataUsed float64, clientIsp string, clientIp string) *SpeedtestResult {
+func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string) *SpeedtestResult {
 	return &SpeedtestResult{
 		jitterLatency: jitterLatency,
 		ping:          ping,
 		downloadSpeed: downloadSpeed,
 		uploadSpeed:   uploadSpeed,
 		dataUsed:      dataUsed,
-		clientIsp:     clientIsp,
-		clientIp:      clientIp,
+		serverID:      serverID,
+		serverHost:    serverHost,
+		clientISP:     clientISP,
+		clientIP:      clientIP,
 		success:       true,
 	}
 }
@@ -61,14 +65,24 @@ func (r *SpeedtestResult) DataUsed() float64 {
 	return r.dataUsed
 }
 
+// ID of the speedtest server used for the test
+func (r *SpeedtestResult) ServerID() string {
+	return r.serverID
+}
+
+// Name of the speedtest server used for the test
+func (r *SpeedtestResult) ServerHost() string {
+	return r.serverHost
+}
+
 // ISP name of the client/connection
-func (r *SpeedtestResult) ClientIsp() string {
-	return r.clientIsp
+func (r *SpeedtestResult) ClientISP() string {
+	return r.clientISP
 }
 
 // Public IP of the client/connection
-func (r *SpeedtestResult) ClientIp() string {
-	return r.clientIp
+func (r *SpeedtestResult) ClientIP() string {
+	return r.clientIP
 }
 
 // Indicates if the test was successfull

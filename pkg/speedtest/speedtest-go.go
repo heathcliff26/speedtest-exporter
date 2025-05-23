@@ -2,6 +2,7 @@ package speedtest
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/showwin/speedtest-go/speedtest"
 )
@@ -16,7 +17,9 @@ func NewSpeedtest() *SpeedtestGo {
 
 // Use the speedtest-go api to run a speedtest and parse the result
 func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
-	var client = speedtest.New()
+	start := time.Now()
+
+	client := speedtest.New()
 
 	serverList, err := client.FetchServers()
 	if err != nil {
@@ -49,17 +52,9 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 	uploadMbps := convertBytesToMbits(server.ULSpeed)
 	dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
 
-	slog.Info("Successfully ran speedtest", slog.Group("result"),
-		slog.Int64("jitterLatency", server.Jitter.Milliseconds()),
-		slog.Int64("ping", server.Latency.Milliseconds()),
-		slog.Float64("downloadSpeed", downloadMbps),
-		slog.Float64("uploadSpeed", uploadMbps),
-		slog.Float64("dataUsed", dataUsed),
-		slog.String("serverId", server.ID),
-		slog.String("serverHost", server.Host),
-		slog.String("isp", user.Isp),
-		slog.String("IP", user.IP),
-	)
+	res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP)
 
-	return NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, user.Isp, user.IP)
+	printSuccessMessage(res, time.Since(start))
+
+	return res
 }
