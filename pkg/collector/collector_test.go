@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var mockSpeedtestResult = speedtest.NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "Foo Corp.", "127.0.0.1")
+var mockSpeedtestResult = speedtest.NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1")
 
 const defaultCacheTime = 5 * time.Minute
 
@@ -190,7 +190,7 @@ func TestCollect(t *testing.T) {
 		ch := make(chan prometheus.Metric, 1)
 		go c.Collect(ch)
 
-		actualLabelValues := []string{mockSpeedtestResult.ClientIp(), mockSpeedtestResult.ClientIsp()}
+		actualLabelValues := []string{mockSpeedtestResult.ClientIP(), mockSpeedtestResult.ClientISP()}
 
 		actualMetric := <-ch
 		expectedMetric := prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, mockSpeedtestResult.JitterLatency(), actualLabelValues...)

@@ -22,6 +22,6 @@ func TestRunSpeedtestForGo(t *testing.T) {
 	assert.NotEmpty(result.DownloadSpeed())
 	assert.NotEmpty(result.UploadSpeed())
 	assert.NotEmpty(result.DataUsed())
-	assert.NotEmpty(result.ClientIsp())
-	assert.NotEmpty(result.ClientIp())
+	assert.NotEmpty(result.ClientISP())
+	assert.NotEmpty(result.ClientIP())
 }

@@ -90,7 +90,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	var up float64
 	if result.Success() {
 		up = 1
-		labelValues := []string{result.ClientIp(), result.ClientIsp()}
+		labelValues := []string{result.ClientIP(), result.ClientISP()}
 		ch <- prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, result.JitterLatency(), labelValues...)
 		ch <- prometheus.MustNewConstMetric(pingDesc, prometheus.GaugeValue, result.Ping(), labelValues...)
 		ch <- prometheus.MustNewConstMetric(downloadSpeedDesc, prometheus.GaugeValue, result.DownloadSpeed(), labelValues...)
