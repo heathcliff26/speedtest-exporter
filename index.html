@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (17.3%)</option>
+				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (24.5%)</option>
 				
 				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.9%)</option>
 				
@@ -141,6 +141,21 @@ func createSpeedtest(path string) (speedtest.Speedtest, error) <span class="cov8
         }</span>
 }
 
+func createServer(port int, reg *prometheus.Registry) *http.Server <span class="cov8" title="1">{
+        router := http.NewServeMux()
+        router.HandleFunc("/", ServerRootHandler)
+        router.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+
+        return &amp;http.Server{
+                Addr:        ":" + strconv.Itoa(port),
+                Handler:     router,
+                ReadTimeout: 10 * time.Second,
+                // The speedtest takes roughly 22-24 seconds on average.
+                // Ensure timeout has some buffer for a worst case.
+                WriteTimeout: 60 * time.Second,
+        }
+}</span>
+
 func main() <span class="cov0" title="0">{
         flag.Parse()
 
@@ -193,16 +208,7 @@ func main() <span class="cov0" title="0">{
                 }</span>()
         }
 
-        <span class="cov0" title="0">router := http.NewServeMux()
-        router.HandleFunc("/", ServerRootHandler)
-        router.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
-
-        server := &amp;http.Server{
-                Addr:         ":" + strconv.Itoa(cfg.Port),
-                Handler:      router,
-                ReadTimeout:  10 * time.Second,
-                WriteTimeout: 10 * time.Second,
-        }
+        <span class="cov0" title="0">server := createServer(cfg.Port, reg)
 
         slog.Info("Starting http server", slog.String("addr", server.Addr))
         err = server.ListenAndServe()
