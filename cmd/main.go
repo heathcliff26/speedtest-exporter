@@ -48,6 +48,21 @@ func createSpeedtest(path string) (speedtest.Speedtest, error) {
 	}
 }
 
+func createServer(port int, reg *prometheus.Registry) *http.Server {
+	router := http.NewServeMux()
+	router.HandleFunc("/", ServerRootHandler)
+	router.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+
+	return &http.Server{
+		Addr:        ":" + strconv.Itoa(port),
+		Handler:     router,
+		ReadTimeout: 10 * time.Second,
+		// The speedtest takes roughly 22-24 seconds on average.
+		// Ensure timeout has some buffer for a worst case.
+		WriteTimeout: 60 * time.Second,
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -100,16 +115,7 @@ func main() {
 		}()
 	}
 
-	router := http.NewServeMux()
-	router.HandleFunc("/", ServerRootHandler)
-	router.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
-
-	server := &http.Server{
-		Addr:         ":" + strconv.Itoa(cfg.Port),
-		Handler:      router,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
+	server := createServer(cfg.Port, reg)
 
 	slog.Info("Starting http server", slog.String("addr", server.Addr))
 	err = server.ListenAndServe()
