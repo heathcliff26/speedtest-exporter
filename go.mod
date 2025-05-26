@@ -3,11 +3,11 @@ module github.com/heathcliff26/speedtest-exporter
 go 1.24.0
 
 require (
-	github.com/heathcliff26/promremote v1.0.12
+	github.com/heathcliff26/promremote v1.0.13
 	github.com/prometheus/client_golang v1.22.0
 	github.com/showwin/speedtest-go v1.7.10
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
+	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -21,11 +21,11 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.62.0 // indirect
+	github.com/prometheus/common v0.63.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/prometheus/prometheus v0.303.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	github.com/prometheus/prometheus v0.304.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
