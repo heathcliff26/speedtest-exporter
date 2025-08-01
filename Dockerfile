@@ -17,26 +17,13 @@ RUN GOOS=linux GOARCH="${TARGETARCH}" hack/build.sh
 ###############################################################################
 
 ###############################################################################
-# BEGIN combine-stage
-# Combine all outputs, to enable single layer copy for the final image
-FROM scratch AS combine-stage
-
-COPY --from=build-stage /app/bin/speedtest-exporter /
-
-COPY --from=build-stage /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
-#
-# END combine-stage
-###############################################################################
-
-###############################################################################
 # BEGIN final-stage
 # Create final docker image
-FROM scratch AS final-stage
+FROM docker.io/library/alpine:3.22.1@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 AS final-stage
 
 WORKDIR /
 
-COPY --from=combine-stage / /
+COPY --from=build-stage /app/bin/speedtest-exporter /
 
 EXPOSE 8080
 
