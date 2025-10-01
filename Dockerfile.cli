@@ -1,7 +1,7 @@
 ###############################################################################
 # BEGIN build-stage
 # Compile the binary
-FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.25.0 AS build-stage
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.25.1 AS build-stage
 
 ARG BUILDPLATFORM
 ARG TARGETARCH
@@ -19,7 +19,7 @@ RUN GOOS=linux GOARCH="${TARGETARCH}" hack/build.sh
 ###############################################################################
 # BEGIN fetch-stage
 # Fetch the speedtest-cli binary
-FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.25.0 AS fetch-stage
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.25.1 AS fetch-stage
 
 ARG BUILDPLATFORM
 ARG TARGETARCH
