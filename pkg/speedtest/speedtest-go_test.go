@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRunSpeedtestForGo(t *testing.T) {
@@ -13,9 +14,7 @@ func TestRunSpeedtestForGo(t *testing.T) {
 
 	s := NewSpeedtest()
 	result := s.Speedtest()
-	if !result.Success() {
-		t.Fatal("Speedtest returned with failure")
-	}
+	require.True(t, result.Success(), "Speedtest should succeed")
 
 	assert := assert.New(t)
 	assert.NotEmpty(result)

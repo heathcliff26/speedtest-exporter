@@ -1,5 +1,10 @@
 package speedtest
 
+import (
+	"encoding/json"
+	"time"
+)
+
 type Speedtest interface {
 	Speedtest() *SpeedtestResult
 }
@@ -15,16 +20,18 @@ type SpeedtestResult struct {
 	clientISP     string
 	clientIP      string
 	success       bool
+	timestamp     int64
 }
 
 // Create a new SpeedtestResult for a failed speedtest.
 func NewFailedSpeedtestResult() *SpeedtestResult {
 	return &SpeedtestResult{
-		success: false,
+		success:   false,
+		timestamp: time.Now().UnixMilli(),
 	}
 }
 
-// Create a new SpeedtestResult from a successfull speedrun
+// Create a new SpeedtestResult from a successful speedrun
 func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string) *SpeedtestResult {
 	return &SpeedtestResult{
 		jitterLatency: jitterLatency,
@@ -37,6 +44,7 @@ func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUse
 		clientISP:     clientISP,
 		clientIP:      clientIP,
 		success:       true,
+		timestamp:     time.Now().UnixMilli(),
 	}
 }
 
@@ -50,7 +58,7 @@ func (r *SpeedtestResult) Ping() float64 {
 	return r.ping
 }
 
-// Download speed im Mbps
+// Download speed in Mbps
 func (r *SpeedtestResult) DownloadSpeed() float64 {
 	return r.downloadSpeed
 }
@@ -85,7 +93,95 @@ func (r *SpeedtestResult) ClientIP() string {
 	return r.clientIP
 }
 
-// Indicates if the test was successfull
+// Indicates if the test was successful
 func (r *SpeedtestResult) Success() bool {
 	return r.success
+}
+
+// Returns the timestamp of when the speedtest was run.
+// The timestamp is represented as milliseconds since the Unix epoch.
+func (r *SpeedtestResult) Timestamp() int64 {
+	return r.timestamp
+}
+
+// Returns the timestamp of when the speedtest was run as time.Time
+func (r *SpeedtestResult) TimestampAsTime() time.Time {
+	return time.UnixMilli(r.timestamp)
+}
+
+// Used for testing purposes only.
+// Sets the timestamp of the speedtest result to the given time.
+func (r *SpeedtestResult) DebugSetTimestamp(ts time.Time) {
+	r.timestamp = ts.UnixMilli()
+}
+
+// MarshalJSON implements json.Marshaler so the (unexported) fields of
+// SpeedtestResult can be serialized with meaningful JSON keys.
+func (r *SpeedtestResult) MarshalJSON() ([]byte, error) {
+	type jsonAlias struct {
+		JitterLatency float64 `json:"jitter_latency_ms"`
+		Ping          float64 `json:"ping_ms"`
+		DownloadSpeed float64 `json:"download_mbps"`
+		UploadSpeed   float64 `json:"upload_mbps"`
+		DataUsed      float64 `json:"data_used_mb"`
+		ServerID      string  `json:"server_id"`
+		ServerHost    string  `json:"server_host"`
+		ClientISP     string  `json:"client_isp"`
+		ClientIP      string  `json:"client_ip"`
+		Success       bool    `json:"success"`
+		Timestamp     int64   `json:"timestamp"`
+	}
+
+	a := jsonAlias{
+		JitterLatency: r.jitterLatency,
+		Ping:          r.ping,
+		DownloadSpeed: r.downloadSpeed,
+		UploadSpeed:   r.uploadSpeed,
+		DataUsed:      r.dataUsed,
+		ServerID:      r.serverID,
+		ServerHost:    r.serverHost,
+		ClientISP:     r.clientISP,
+		ClientIP:      r.clientIP,
+		Success:       r.success,
+		Timestamp:     r.timestamp,
+	}
+
+	return json.MarshalIndent(a, "", "  ")
+}
+
+// UnmarshalJSON implements json.Unmarshaler so JSON with the same keys used
+// in MarshalJSON can be decoded back into a SpeedtestResult with unexported fields.
+func (r *SpeedtestResult) UnmarshalJSON(data []byte) error {
+	type jsonAlias struct {
+		JitterLatency float64 `json:"jitter_latency_ms"`
+		Ping          float64 `json:"ping_ms"`
+		DownloadSpeed float64 `json:"download_mbps"`
+		UploadSpeed   float64 `json:"upload_mbps"`
+		DataUsed      float64 `json:"data_used_mb"`
+		ServerID      string  `json:"server_id"`
+		ServerHost    string  `json:"server_host"`
+		ClientISP     string  `json:"client_isp"`
+		ClientIP      string  `json:"client_ip"`
+		Success       bool    `json:"success"`
+		Timestamp     int64   `json:"timestamp"`
+	}
+
+	var a jsonAlias
+	if err := json.Unmarshal(data, &a); err != nil {
+		return err
+	}
+
+	r.jitterLatency = a.JitterLatency
+	r.ping = a.Ping
+	r.downloadSpeed = a.DownloadSpeed
+	r.uploadSpeed = a.UploadSpeed
+	r.dataUsed = a.DataUsed
+	r.serverID = a.ServerID
+	r.serverHost = a.ServerHost
+	r.clientISP = a.ClientISP
+	r.clientIP = a.ClientIP
+	r.success = a.Success
+	r.timestamp = a.Timestamp
+
+	return nil
 }

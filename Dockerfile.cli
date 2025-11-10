@@ -62,6 +62,8 @@ WORKDIR /
 
 COPY --from=combine-stage / /
 
+VOLUME /cache
+
 EXPOSE 8080
 
 USER 1001

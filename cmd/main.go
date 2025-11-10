@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/heathcliff26/promremote/promremote"
+	"github.com/heathcliff26/speedtest-exporter/pkg/cache"
 	"github.com/heathcliff26/speedtest-exporter/pkg/collector"
 	"github.com/heathcliff26/speedtest-exporter/pkg/config"
 	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
@@ -83,7 +84,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	collector, err := collector.NewCollector(time.Duration(cfg.Cache), s)
+	resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", time.Duration(cfg.Cache))
+
+	collector, err := collector.NewCollector(resultCache, s)
 	if err != nil {
 		slog.Error("Failed to create collector", "err", err)
 		os.Exit(1)

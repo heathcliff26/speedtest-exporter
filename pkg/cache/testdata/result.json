@@ -1,0 +1,13 @@
+{
+  "jitter_latency_ms": 0.5,
+  "ping_ms": 15,
+  "download_mbps": 876.53,
+  "upload_mbps": 12.34,
+  "data_used_mb": 950.3079,
+  "server_id": "1234",
+  "server_host": "example.org",
+  "client_isp": "Foo Corp.",
+  "client_ip": "127.0.0.1",
+  "success": true,
+  "timestamp": 1762786565082
+}

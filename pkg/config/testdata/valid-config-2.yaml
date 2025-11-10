@@ -1,6 +1,7 @@
 logLevel: "debug"
 port: 2080
 cache: "30m"
+persistCache: true
 remote:
   enable: true
   url: "https://example.org/"

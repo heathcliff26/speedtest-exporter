@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewSpeedtestCLI(t *testing.T) {
@@ -19,18 +20,14 @@ func TestNewSpeedtestCLI(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		s, err := NewSpeedtestCLI("testdata/speedtest-cli.sh")
-		if err != nil {
-			t.Fatalf("Failed to create speedtest-cli: %v", err)
-		}
+		require.NoError(t, err, "Should create speedtest-cli")
 		assert.Contains(s.Path(), "testdata/speedtest-cli.sh")
 	})
 }
 
 func TestRunSpeedtestForCLI(t *testing.T) {
 	s, err := NewSpeedtestCLI("testdata/speedtest-cli.sh")
-	if err != nil {
-		t.Fatalf("Failed to create speedtest-cli: %v", err)
-	}
+	require.NoError(t, err, "Should create speedtest-cli")
 	makeCmd = func(path string) *exec.Cmd {
 		return exec.Command("bash", "-c", path)
 	}
@@ -38,6 +35,8 @@ func TestRunSpeedtestForCLI(t *testing.T) {
 	expectedResult := NewSpeedtestResult(0.629, 17.148, 931.564032, 49.4518, 1141.3079899999998, "60440", "speedtest.hannover.jonasdevries.de", "Some ISP", "100.107.156.96")
 
 	result := s.Speedtest()
+
+	expectedResult.timestamp = result.timestamp // sync timestamps for comparison
 
 	assert.Equal(t, result, expectedResult)
 }
