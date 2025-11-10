@@ -25,6 +25,8 @@ WORKDIR /
 
 COPY --from=build-stage /app/bin/speedtest-exporter /
 
+VOLUME /cache
+
 EXPOSE 8080
 
 USER 1001

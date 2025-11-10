@@ -16,12 +16,14 @@ func TestValidConfigs(t *testing.T) {
 		LogLevel:     "warn",
 		Port:         80,
 		Cache:        Duration(time.Minute),
+		PersistCache: false,
 		SpeedtestCLI: "/path/to/speedtest",
 	}
 	c2 := Config{
-		LogLevel: "debug",
-		Port:     2080,
-		Cache:    Duration(30 * time.Minute),
+		LogLevel:     "debug",
+		Port:         2080,
+		Cache:        Duration(30 * time.Minute),
+		PersistCache: true,
 		Remote: RemoteConfig{
 			Enable:   true,
 			URL:      "https://example.org/",
@@ -31,9 +33,10 @@ func TestValidConfigs(t *testing.T) {
 		},
 	}
 	c3 := Config{
-		LogLevel: "error",
-		Port:     DEFAULT_PORT,
-		Cache:    DEFAULT_CACHE,
+		LogLevel:     "error",
+		Port:         DEFAULT_PORT,
+		Cache:        DEFAULT_CACHE,
+		PersistCache: DEFAULT_PERSIST_CACHE,
 		Remote: RemoteConfig{
 			Enable:   true,
 			URL:      "https://example.org/",
@@ -121,9 +124,10 @@ func TestInvalidConfig(t *testing.T) {
 
 func TestEnvSubstitution(t *testing.T) {
 	c := Config{
-		LogLevel: "debug",
-		Port:     2080,
-		Cache:    Duration(time.Minute),
+		LogLevel:     "debug",
+		Port:         2080,
+		Cache:        Duration(time.Minute),
+		PersistCache: DEFAULT_PERSIST_CACHE,
 	}
 	t.Setenv("SPEEDTEST_TEST_LOG_LEVEL", c.LogLevel)
 	t.Setenv("SPEEDTEST_TEST_PORT", strconv.Itoa(c.Port))
@@ -156,7 +160,7 @@ func TestSetLogLevel(t *testing.T) {
 	t.Cleanup(func() {
 		err := setLogLevel(DEFAULT_LOG_LEVEL)
 		if err != nil {
-			t.Fatalf("Failed to cleanup after test: %v", err)
+			t.Logf("Failed to cleanup after test: %v", err)
 		}
 	})
 

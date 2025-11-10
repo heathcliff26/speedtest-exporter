@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	DEFAULT_LOG_LEVEL = "info"
-	DEFAULT_PORT      = 8080
-	DEFAULT_CACHE     = Duration(5 * time.Minute)
+	DEFAULT_LOG_LEVEL     = "info"
+	DEFAULT_PORT          = 8080
+	DEFAULT_CACHE         = Duration(5 * time.Minute)
+	DEFAULT_PERSIST_CACHE = true
 )
 
 var logLevel *slog.LevelVar
@@ -32,6 +33,7 @@ type Config struct {
 	LogLevel     string       `json:"logLevel,omitempty"`
 	Port         int          `json:"port,omitempty"`
 	Cache        Duration     `json:"cache,omitempty"`
+	PersistCache bool         `json:"persistCache,omitempty"`
 	SpeedtestCLI string       `json:"speedtestCLI,omitempty"`
 	Remote       RemoteConfig `json:"remote,omitempty"`
 }
@@ -47,9 +49,10 @@ type RemoteConfig struct {
 // Returns a Config with default values set
 func DefaultConfig() Config {
 	return Config{
-		LogLevel: DEFAULT_LOG_LEVEL,
-		Port:     DEFAULT_PORT,
-		Cache:    DEFAULT_CACHE,
+		LogLevel:     DEFAULT_LOG_LEVEL,
+		Port:         DEFAULT_PORT,
+		Cache:        DEFAULT_CACHE,
+		PersistCache: DEFAULT_PERSIST_CACHE,
 	}
 }
 

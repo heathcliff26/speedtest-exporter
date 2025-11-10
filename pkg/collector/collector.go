@@ -3,17 +3,15 @@ package collector
 import (
 	"log/slog"
 	"sync"
-	"time"
 
+	"github.com/heathcliff26/speedtest-exporter/pkg/cache"
 	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Collector struct {
-	cacheTime     time.Duration
-	speedtest     speedtest.Speedtest
-	lastResult    *speedtest.SpeedtestResult
-	nextSpeedtest time.Time
+	cache     *cache.Cache
+	speedtest speedtest.Speedtest
 }
 
 var (
@@ -35,12 +33,12 @@ var speedtestMutex sync.Mutex
 //	cacheTime: Minimum time between speedtest runs
 //	instance: Name of this instance, provided as label on all metrics
 //	speedtest: Instance of speedtest to use for collection metrics
-func NewCollector(cacheTime time.Duration, speedtest speedtest.Speedtest) (*Collector, error) {
+func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest) (*Collector, error) {
 	if speedtest == nil {
 		return nil, ErrNoSpeedtest{}
 	}
 	return &Collector{
-		cacheTime: cacheTime,
+		cache:     cache,
 		speedtest: speedtest,
 	}, nil
 }
@@ -50,37 +48,22 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	prometheus.DescribeByCollect(c, ch)
 }
 
-// Reset time for new cache
-func (c *Collector) setNextSpeedtestTime() {
-	c.nextSpeedtest = time.Now().Add(c.cacheTime)
-	slog.Debug("Next Speedtest will not be executed before", slog.String("next", c.nextSpeedtest.Local().String()))
-}
-
 // Concurrency safe function to get the latest result of the speedtest.
 // Will either return the cached result or run a new test.
 func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult {
-	if c.cacheValid() {
-		slog.Debug("Cache has not expired, returning cached results", slog.String("now", time.Now().String()), slog.String("next", c.nextSpeedtest.Local().String()))
-		return c.lastResult
-	}
-
 	// Lock here to prevent running more than one Speedtest at a time, since they would affect each others results
 	speedtestMutex.Lock()
 	defer speedtestMutex.Unlock()
-	// Check again if another thread already ran a Speedtest while this one waited
-	if c.cacheValid() {
-		slog.Debug("Cache has been renewed, returning cached results")
-		return c.lastResult
+
+	result, ok := c.cache.Read()
+	if ok {
+		slog.Debug("Cache has not expired, returning cached results", slog.String("expires", c.cache.ExpiresAt().Local().String()))
+		return result
 	}
 	slog.Debug("Cache expired, running new Speedtest")
-	c.lastResult = c.speedtest.Speedtest()
-	c.setNextSpeedtestTime()
-	return c.lastResult
-}
-
-// Check if the current cache is still valid
-func (c *Collector) cacheValid() bool {
-	return c.lastResult != nil && time.Now().Before(c.nextSpeedtest)
+	result = c.speedtest.Speedtest()
+	c.cache.Save(result)
+	return result
 }
 
 // Implements the Collect function for prometheus.Collector

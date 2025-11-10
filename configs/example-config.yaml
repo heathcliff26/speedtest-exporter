@@ -7,6 +7,8 @@ port: 8080
 # Time for which the last speedtest result will be cached.
 # Also used for the interval in which remote_write is invoked when enabled
 cache: "5m"
+# Disable persisting the cache to disk by setting this to false
+persistCache: true
 # When not empty, tells the exporter to use an external speedtest-cli binary instead of using go-native implementation
 speedtestCLI: ""
 # Configure remote_write behaviour

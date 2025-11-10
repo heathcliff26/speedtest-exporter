@@ -54,7 +54,12 @@ To run the image with default settings simply use:
 ```
 podman run -d -p 8080:8080 ghcr.io/heathcliff26/speedtest-exporter:slim
 ```
-You can then view you metrics under `http://localhost:8080/metrics`
+You can then view your metrics under `http://localhost:8080/metrics`.
+
+By default the last result will be cached to disk. To persist this between container runs, mount a volume at `/cache`:
+```
+podman run -d -p 8080:8080 -v speedtest-cache:/cache ghcr.io/heathcliff26/speedtest-exporter:slim
+```
 
 ## Configuration
 

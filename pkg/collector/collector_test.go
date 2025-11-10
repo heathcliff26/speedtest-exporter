@@ -4,9 +4,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heathcliff26/speedtest-exporter/pkg/cache"
 	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var mockSpeedtestResult = speedtest.NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1")
@@ -19,51 +21,21 @@ func NewMockSpeedtest() *speedtest.MockSpeedtest {
 
 func TestNewCollector(t *testing.T) {
 	s := NewMockSpeedtest()
+	c := cache.NewCache(false, "", defaultCacheTime)
 	expectedCollector := &Collector{
-		cacheTime: defaultCacheTime,
+		cache:     c,
 		speedtest: s,
 	}
 
-	actualCollector, err := NewCollector(defaultCacheTime, s)
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
+	actualCollector, err := NewCollector(c, s)
+	require.NoError(t, err, "Should create new Collector")
 
 	assert := assert.New(t)
 
 	assert.Equal(expectedCollector, actualCollector)
 
-	_, err = NewCollector(defaultCacheTime, nil)
+	_, err = NewCollector(nil, nil)
 	assert.Equal(ErrNoSpeedtest{}, err)
-}
-
-func TestSetNextSpeedtestTime(t *testing.T) {
-	now := time.Now()
-
-	c, err := NewCollector(defaultCacheTime, NewMockSpeedtest())
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
-
-	c.nextSpeedtest = now
-	c.setNextSpeedtestTime()
-
-	assert.Greater(t, c.nextSpeedtest, now.Add(defaultCacheTime-time.Millisecond))
-	assert.Less(t, c.nextSpeedtest, now.Add(defaultCacheTime+time.Millisecond))
-}
-
-func TestFirstSpeedtestRun(t *testing.T) {
-	c, err := NewCollector(defaultCacheTime, NewMockSpeedtest())
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
-	result := c.getSpeedtestResult()
-
-	assert := assert.New(t)
-
-	assert.Equal(mockSpeedtestResult, result)
-	assert.Equal(result, c.lastResult)
-	assert.NotEmpty(c.nextSpeedtest)
 }
 
 func TestResultFromCache(t *testing.T) {
@@ -73,48 +45,17 @@ func TestResultFromCache(t *testing.T) {
 		speedtestRan = true
 	}
 
-	c, err := NewCollector(defaultCacheTime, s)
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
-	c.lastResult = speedtest.NewFailedSpeedtestResult()
-	c.nextSpeedtest = time.Now().Add(time.Hour)
+	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s)
+	require.NoError(t, err, "Should create new Collector")
+
+	c.cache.Save(speedtest.NewFailedSpeedtestResult())
 
 	result := c.getSpeedtestResult()
 
 	assert := assert.New(t)
 
-	assert.NotNil(result)
 	assert.Equal(speedtest.NewFailedSpeedtestResult(), result)
-	if speedtestRan {
-		t.Error("Speedtest has been called")
-	}
-}
-
-func TestRunSpeedtestWhenCacheEmpty(t *testing.T) {
-	speedtestRan := false
-	s := NewMockSpeedtest()
-	s.Callback = func() {
-		speedtestRan = true
-	}
-
-	c, err := NewCollector(defaultCacheTime, s)
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
-	c.lastResult = nil
-	c.nextSpeedtest = time.Now().Add(time.Hour)
-
-	result := c.getSpeedtestResult()
-
-	assert := assert.New(t)
-
-	assert.NotEmpty(result)
-	assert.Equal(mockSpeedtestResult, result)
-	assert.Equal(result, c.lastResult)
-	if !speedtestRan {
-		t.Error("Speedtest was not called")
-	}
+	assert.False(speedtestRan, "Should not have called the mock speedtest")
 }
 
 func TestRunSpeedtestWhenCacheExpired(t *testing.T) {
@@ -124,24 +65,18 @@ func TestRunSpeedtestWhenCacheExpired(t *testing.T) {
 		speedtestRan = true
 	}
 
-	c, err := NewCollector(defaultCacheTime, s)
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
-	c.lastResult = speedtest.NewFailedSpeedtestResult()
-	c.nextSpeedtest = time.Now().Add(time.Hour * -1)
-
+	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s)
+	require.NoError(t, err, "Should create new Collector")
 	result := c.getSpeedtestResult()
 
 	assert := assert.New(t)
 
-	assert.NotEmpty(result)
-	assert.NotEqual(speedtest.NewFailedSpeedtestResult(), result)
-	assert.Equal(mockSpeedtestResult, result)
-	assert.Equal(result, c.lastResult)
-	if !speedtestRan {
-		t.Error("Speedtest was not called")
-	}
+	assert.Equal(mockSpeedtestResult, result, "Should return the mock speedtest result")
+	cachedResult, valid := c.cache.Read()
+	assert.True(valid, "Cache should be valid after speedtest run")
+	assert.Equal(cachedResult, result, "Cached result should equal returned result")
+
+	assert.True(speedtestRan, "Should have called the mock speedtest")
 }
 
 func TestSpeedtestIsNotRunConcurrently(t *testing.T) {
@@ -158,10 +93,8 @@ func TestSpeedtestIsNotRunConcurrently(t *testing.T) {
 		time.Sleep(10 * time.Second)
 	}
 
-	c, err := NewCollector(defaultCacheTime, s)
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
+	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s)
+	require.NoError(t, err, "Should create new Collector")
 
 	assert := assert.New(t)
 
@@ -170,21 +103,22 @@ func TestSpeedtestIsNotRunConcurrently(t *testing.T) {
 		result1 = c.getSpeedtestResult()
 	}()
 	<-sleeping
-	assert.Nil(c.lastResult)
+	cachedResult, _ := c.cache.Read()
+	assert.Nil(cachedResult)
 	result2 = c.getSpeedtestResult()
+
+	cachedResult, _ = c.cache.Read()
 
 	assert.NotNil(result1)
 	assert.Equal(result1, result2)
-	assert.Equal(result1, c.lastResult)
+	assert.Equal(result1, cachedResult)
 	assert.Equal(1, i)
 }
 
 func TestCollect(t *testing.T) {
 	s := NewMockSpeedtest()
-	c, err := NewCollector(0, s)
-	if err != nil {
-		t.Fatalf("Could not create new Collector: %v", err)
-	}
+	c, err := NewCollector(nil, s)
+	require.NoError(t, err, "Should create new Collector")
 
 	t.Run("Success", func(t *testing.T) {
 		ch := make(chan prometheus.Metric, 1)

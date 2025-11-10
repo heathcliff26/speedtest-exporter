@@ -1,4 +1,5 @@
 logLevel: "warn"
 port: 80
 cache: "1m"
+persistCache: false
 speedtestCLI: "/path/to/speedtest"

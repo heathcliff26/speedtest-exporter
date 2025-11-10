@@ -17,9 +17,7 @@ import (
 
 func TestServerRootHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
-	}
+	require.NoError(t, err, "Failed to create request")
 	rr := httptest.NewRecorder()
 
 	ServerRootHandler(rr, req)
@@ -36,16 +34,12 @@ func TestServerRootHandler(t *testing.T) {
 func TestCreateSpeedtest(t *testing.T) {
 	t.Run("SpeedtestCLI", func(t *testing.T) {
 		s, err := createSpeedtest("../pkg/speedtest/testdata/speedtest-cli.sh")
-		if err != nil {
-			t.Fatalf("Failed to create speedtest: %v", err)
-		}
+		require.NoError(t, err, "Should create speedtest-cli")
 		assert.Equal(t, "*speedtest.SpeedtestCLI", reflect.TypeOf(s).String())
 	})
 	t.Run("Speedtest", func(t *testing.T) {
 		s, err := createSpeedtest("")
-		if err != nil {
-			t.Fatalf("Failed to create speedtest: %v", err)
-		}
+		require.NoError(t, err, "Should create speedtest-cli")
 		assert.Equal(t, "*speedtest.SpeedtestGo", reflect.TypeOf(s).String())
 	})
 }
@@ -56,7 +50,7 @@ func TestServerWriteTimeout(t *testing.T) {
 
 	s, err := createSpeedtest("")
 	require.NoError(err, "Should create speedtest")
-	c, err := collector.NewCollector(-1, s) // Ensure we do not use a cache
+	c, err := collector.NewCollector(nil, s) // Ensure we do not use a cache
 	require.NoError(err, "Should create collector")
 
 	reg := prometheus.NewRegistry()
