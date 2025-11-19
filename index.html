@@ -57,7 +57,7 @@
 				
 				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (24.1%)</option>
 				
-				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (90.0%)</option>
+				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (86.8%)</option>
 				
 				<option value="file2">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.3%)</option>
 				
@@ -274,6 +274,11 @@ func NewCache(persist bool, path string, cacheTime time.Duration) *Cache <span c
         data, err := io.ReadAll(f)
         if err != nil </span><span class="cov0" title="0">{
                 slog.Info("Could not initialize cache from disk", slog.String("file", cache.path), slog.Any("error", err))
+                return cache
+        }</span>
+
+        <span class="cov8" title="1">if len(data) == 0 </span><span class="cov0" title="0">{
+                slog.Info("Cache file is empty, starting with empty cache", slog.String("file", cache.path))
                 return cache
         }</span>
 
