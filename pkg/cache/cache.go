@@ -51,6 +51,11 @@ func NewCache(persist bool, path string, cacheTime time.Duration) *Cache {
 		return cache
 	}
 
+	if len(data) == 0 {
+		slog.Info("Cache file is empty, starting with empty cache", slog.String("file", cache.path))
+		return cache
+	}
+
 	cachedResult := &speedtest.SpeedtestResult{}
 	err = cachedResult.UnmarshalJSON(data)
 	if err != nil {
