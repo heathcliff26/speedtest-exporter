@@ -24,6 +24,7 @@ One important functionality is that this projects implements prometheus remote_w
     - [Image location](#image-location)
     - [Tags](#tags)
   - [Usage](#usage)
+    - [Kubernetes](#kubernetes)
   - [Configuration](#configuration)
   - [Metrics](#metrics)
   - [Dashboard](#dashboard)
@@ -60,6 +61,14 @@ By default the last result will be cached to disk. To persist this between conta
 ```
 podman run -d -p 8080:8080 -v speedtest-cache:/cache ghcr.io/heathcliff26/speedtest-exporter:slim
 ```
+
+### Kubernetes
+
+Helm charts are released via oci repos and can be installed with:
+```
+helm install speedtest-exporter oci://ghcr.io/heathcliff26/manifests/speedtest-exporter --version <version>
+```
+Please use the latest version from the releases page.
 
 ## Configuration
 

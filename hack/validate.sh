@@ -10,3 +10,6 @@ if [ $rc -ne 0 ]; then
     echo "FATAL: Need to run \"make fmt\""
     exit 1
 fi
+
+echo "Linting helm chart"
+make lint-helm
