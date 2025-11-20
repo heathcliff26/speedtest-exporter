@@ -1,0 +1,18 @@
+apiVersion: v2
+name: speedtest-exporter
+description: A Helm chart for speedtest-exporter - monitor the network speed via prometheus
+type: application
+version: 0.1.0
+appVersion: "v0.0.0"
+home: https://github.com/heathcliff26/speedtest-exporter
+maintainers:
+  - name: heathcliff26
+    email: heathcliff@heathcliff.eu
+keywords:
+  - speedtest-exporter
+  - prometheus
+  - monitoring
+  - grafana
+  - network
+sources:
+  - https://github.com/heathcliff26/speedtest-exporter

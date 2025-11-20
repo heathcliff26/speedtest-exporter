@@ -1,0 +1,27 @@
+{{- if .Values.servicemonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "speedtest-exporter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- with .Values.servicemonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- include "speedtest-exporter.labels" . | nindent 4 }}
+spec:
+  endpoints:
+    - port: metrics
+      scrapeTimeout: {{ .Values.servicemonitor.scrapeTimeout }}
+      interval: {{ .Values.servicemonitor.interval }}
+      {{- with .Values.servicemonitor.relabelings }}
+      relabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "speedtest-exporter.selectorLabels" . | nindent 6 }}
+{{- end }}

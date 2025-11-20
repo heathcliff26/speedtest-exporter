@@ -1,0 +1,16 @@
+{{- if .Values.config.persistCache -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "speedtest-exporter.fullname" . }}-cache
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "speedtest-exporter.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.cache.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.cache.size }}
+{{- end }}

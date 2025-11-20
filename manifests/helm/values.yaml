@@ -1,0 +1,143 @@
+# Default values for speedtest-exporter.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Configure speedtest-exporter
+config:
+  # Log level of the application
+  logLevel: "info"
+
+  # Port for the metrics server
+  port: 8080
+  # Time for which the last speedtest result will be cached.
+  # Also used for the interval in which remote_write is invoked when enabled
+  cache: "5m"
+  # Disable persisting the cache to disk by setting this to false
+  persistCache: true
+  # When not empty, tells the exporter to use an external speedtest-cli binary instead of using go-native implementation
+  speedtestCLI: ""
+  # Configure remote_write behaviour
+  remote:
+    # Enable remote write, when false this part of the config will be ignored
+    enable: false
+    # URL to prometheus remote_write endpoint
+    url: ""
+    # Name of the instance, used to label metrics when performing remote_write. Defaults to hostname when empty
+    instance: ""
+    # Name of job under which metrics will be pushed
+    jobName: "speedtest-exporter"
+    # Username and password for Basic Authentication. Leave empty when not required
+    username: ""
+    password: ""
+
+cache:
+  # Storage class for the persistent volume claim
+  storageClassName: hostpath-hdd-ephemeral
+  # Size of the persistent volume claim
+  size: 1Mi
+
+# Container image configuration
+image:
+  repository: ghcr.io/heathcliff26/speedtest-exporter
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This is for setting Kubernetes Annotations to a Pod.
+podAnnotations: {}
+# This is for setting Kubernetes Labels to a Pod.
+podLabels: {}
+
+# This is for setting the pod security context.
+podSecurityContext:
+  fsGroup: 1001
+
+# This is for setting the container security context.
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is for setting up a service.
+service:
+  # This sets the service type.
+  type: ClusterIP
+  ipFamilyPolicy: PreferDualStack
+  ipFamilies:
+    - IPv4
+    - IPv6
+  # Port to expose the service on.
+  port: 8080
+
+# This is for setting up a ServiceMonitor for Prometheus Operator
+servicemonitor:
+  enabled: false
+  # Additional labels for the ServiceMonitor
+  labels:
+    release: monitoring
+  # Scrape interval
+  interval: 5m
+  # Scrape timeout
+  scrapeTimeout: 1m
+  # Relabelings for the ServiceMonitor
+  relabelings: []
+    # - replacement: "my-cluster"
+    #   action: replace
+    #   argetLabel: instance
+
+# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: speedtest-exporter.example.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: speedtest-exporter-tls
+  #    hosts:
+  #      - speedtest-exporter.example.org
+
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  periodSeconds: 5
+  failureThreshold: 3
+  timeoutSeconds: 1
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  periodSeconds: 5
+  timeoutSeconds: 1
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
