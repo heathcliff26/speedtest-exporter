@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"regexp"
+	"slices"
 	"time"
 
 	"github.com/golang/snappy"
@@ -103,7 +104,7 @@ func (c *Client) post(ts []prompb.TimeSeries) error {
 		return err
 	}
 	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
+	if res.StatusCode < 200 || res.StatusCode > 299 {
 		return NewErrRemoteWriteFailed(res.StatusCode, req.Body)
 	}
 
@@ -134,24 +135,27 @@ func (c *Client) collect() ([]prompb.TimeSeries, error) {
 			return nil, err
 		}
 
-		// Extract lables
-		labels := make([]prompb.Label, len(m.Label)+3)
-		labels[0] = prompb.Label{
+		// Extract labels
+		labels := make([]prompb.Label, 0, len(m.Label)+3)
+		labels = append(labels, prompb.Label{
 			Name:  "__name__",
 			Value: fqName[1],
-		}
-		labels[1] = prompb.Label{
+		})
+		labels = append(labels, prompb.Label{
 			Name:  "instance",
 			Value: c.instance,
-		}
-		labels[2] = prompb.Label{
+		})
+		labels = append(labels, prompb.Label{
 			Name:  "job",
 			Value: c.job,
-		}
-		for i, l := range m.Label {
-			labels[i+3] = prompb.Label{
-				Name:  l.GetName(),
-				Value: l.GetValue(),
+		})
+		dropLabels := []string{"__name__", "instance", "job"}
+		for _, l := range m.Label {
+			if !slices.Contains(dropLabels, l.GetName()) {
+				labels = append(labels, prompb.Label{
+					Name:  l.GetName(),
+					Value: l.GetValue(),
+				})
 			}
 		}
 
