@@ -19,6 +19,8 @@ remote:
   url: ""
   # Name of the instance, used to label metrics when performing remote_write. Defaults to hostname when empty
   instance: ""
+  # Name of job under which metrics will be pushed
+  jobName: "speedtest-exporter"
   # Username and password for Basic Authentication. Leave empty when not required
   username: ""
   password: ""

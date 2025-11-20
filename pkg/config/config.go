@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	DEFAULT_LOG_LEVEL     = "info"
-	DEFAULT_PORT          = 8080
-	DEFAULT_CACHE         = Duration(5 * time.Minute)
-	DEFAULT_PERSIST_CACHE = true
+	DEFAULT_LOG_LEVEL       = "info"
+	DEFAULT_PORT            = 8080
+	DEFAULT_CACHE           = Duration(5 * time.Minute)
+	DEFAULT_PERSIST_CACHE   = true
+	DEFAULT_REMOTE_JOB_NAME = "speedtest-exporter"
 )
 
 var logLevel *slog.LevelVar
@@ -42,6 +43,7 @@ type RemoteConfig struct {
 	Enable   bool   `json:"enable"`
 	URL      string `json:"url"`
 	Instance string `json:"instance"`
+	JobName  string `json:"jobName,omitempty"`
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
 }
@@ -53,6 +55,9 @@ func DefaultConfig() Config {
 		Port:         DEFAULT_PORT,
 		Cache:        DEFAULT_CACHE,
 		PersistCache: DEFAULT_PERSIST_CACHE,
+		Remote: RemoteConfig{
+			JobName: DEFAULT_REMOTE_JOB_NAME,
+		},
 	}
 }
 
