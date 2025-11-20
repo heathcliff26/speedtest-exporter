@@ -63,7 +63,7 @@
 				
 				<option value="file3">github.com/heathcliff26/speedtest-exporter/pkg/collector/errors.go (0.0%)</option>
 				
-				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (82.5%)</option>
+				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (91.9%)</option>
 				
 				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/config/duration.go (90.9%)</option>
 				
@@ -181,7 +181,7 @@ func main() <span class="cov0" title="0">{
 
         <span class="cov0" title="0">resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", time.Duration(cfg.Cache))
 
-        collector, err := collector.NewCollector(resultCache, s)
+        collector, err := collector.NewCollector(resultCache, s, cfg.Remote.Instance)
         if err != nil </span><span class="cov0" title="0">{
                 slog.Error("Failed to create collector", "err", err)
                 os.Exit(1)
@@ -365,10 +365,11 @@ import (
 type Collector struct {
         cache     *cache.Cache
         speedtest speedtest.Speedtest
+        instance  string
 }
 
 var (
-        variableLabels    = []string{"ip", "isp"}
+        variableLabels    = []string{"ip", "isp", "instance"}
         jitterLatencyDesc = prometheus.NewDesc("speedtest_jitter_latency_milliseconds", "Speedtest current Jitter in ms", variableLabels, nil)
         pingDesc          = prometheus.NewDesc("speedtest_ping_latency_milliseconds", "Speedtest current Ping in ms", variableLabels, nil)
         downloadSpeedDesc = prometheus.NewDesc("speedtest_download_megabits_per_second", "Speedtest current Download Speed in Mbit/s", variableLabels, nil)
@@ -386,13 +387,14 @@ var speedtestMutex sync.Mutex
 //        cacheTime: Minimum time between speedtest runs
 //        instance: Name of this instance, provided as label on all metrics
 //        speedtest: Instance of speedtest to use for collection metrics
-func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest) (*Collector, error) <span class="cov8" title="1">{
+func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest, instance string) (*Collector, error) <span class="cov8" title="1">{
         if speedtest == nil </span><span class="cov8" title="1">{
                 return nil, ErrNoSpeedtest{}
         }</span>
         <span class="cov8" title="1">return &amp;Collector{
                 cache:     cache,
                 speedtest: speedtest,
+                instance:  instance,
         }, nil</span>
 }
 
@@ -426,7 +428,7 @@ func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" t
         var up float64
         if result.Success() </span><span class="cov8" title="1">{
                 up = 1
-                labelValues := []string{result.ClientIP(), result.ClientISP()}
+                labelValues := []string{result.ClientIP(), result.ClientISP(), c.instance}
                 ch &lt;- prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, result.JitterLatency(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(pingDesc, prometheus.GaugeValue, result.Ping(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(downloadSpeedDesc, prometheus.GaugeValue, result.DownloadSpeed(), labelValues...)
@@ -499,16 +501,22 @@ type RemoteConfig struct {
 
 // Returns a Config with default values set
 func DefaultConfig() Config <span class="cov8" title="1">{
-        return Config{
+        hostname, err := os.Hostname()
+        if err != nil </span><span class="cov0" title="0">{
+                slog.Error("Failed to retrieve hostname, using localhost instead", "err", err)
+                hostname = "localhost"
+        }</span>
+        <span class="cov8" title="1">return Config{
                 LogLevel:     DEFAULT_LOG_LEVEL,
                 Port:         DEFAULT_PORT,
                 Cache:        DEFAULT_CACHE,
                 PersistCache: DEFAULT_PERSIST_CACHE,
                 Remote: RemoteConfig{
-                        JobName: DEFAULT_REMOTE_JOB_NAME,
+                        Instance: hostname,
+                        JobName:  DEFAULT_REMOTE_JOB_NAME,
                 },
-        }
-}</span>
+        }</span>
+}
 
 // Loads config from file, returns error if config is invalid
 // Arguments:
@@ -551,15 +559,6 @@ func LoadConfig(path string, env bool) (Config, error) <span class="cov8" title=
                 <span class="cov8" title="1">if c.Remote.Username != c.Remote.Password &amp;&amp; (c.Remote.Username == "" || c.Remote.Password == "") </span><span class="cov8" title="1">{
                         return Config{}, promremote.ErrMissingAuthCredentials{}
                 }</span>
-                <span class="cov8" title="1">if c.Remote.Instance == "" </span><span class="cov0" title="0">{
-                        slog.Info("No instance name provided, defaulting to hostname")
-                        hostname, err := os.Hostname()
-                        if err != nil </span><span class="cov0" title="0">{
-                                slog.Error("Failed to retrieve hostname, using localhost instead", "err", err)
-                                hostname = "localhost"
-                        }</span>
-                        <span class="cov0" title="0">c.Remote.Instance = hostname</span>
-                }
         }
 
         <span class="cov8" title="1">return c, nil</span>
