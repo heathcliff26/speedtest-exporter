@@ -3,11 +3,11 @@ module github.com/heathcliff26/speedtest-exporter
 go 1.24.0
 
 require (
-	github.com/heathcliff26/promremote v1.0.18
+	github.com/heathcliff26/promremote v1.0.19
 	github.com/prometheus/client_golang v1.23.2
 	github.com/showwin/speedtest-go v1.7.10
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
+	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6
 	sigs.k8s.io/yaml v1.6.0
 )
 
