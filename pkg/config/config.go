@@ -50,13 +50,19 @@ type RemoteConfig struct {
 
 // Returns a Config with default values set
 func DefaultConfig() Config {
+	hostname, err := os.Hostname()
+	if err != nil {
+		slog.Error("Failed to retrieve hostname, using localhost instead", "err", err)
+		hostname = "localhost"
+	}
 	return Config{
 		LogLevel:     DEFAULT_LOG_LEVEL,
 		Port:         DEFAULT_PORT,
 		Cache:        DEFAULT_CACHE,
 		PersistCache: DEFAULT_PERSIST_CACHE,
 		Remote: RemoteConfig{
-			JobName: DEFAULT_REMOTE_JOB_NAME,
+			Instance: hostname,
+			JobName:  DEFAULT_REMOTE_JOB_NAME,
 		},
 	}
 }
@@ -101,15 +107,6 @@ func LoadConfig(path string, env bool) (Config, error) {
 		}
 		if c.Remote.Username != c.Remote.Password && (c.Remote.Username == "" || c.Remote.Password == "") {
 			return Config{}, promremote.ErrMissingAuthCredentials{}
-		}
-		if c.Remote.Instance == "" {
-			slog.Info("No instance name provided, defaulting to hostname")
-			hostname, err := os.Hostname()
-			if err != nil {
-				slog.Error("Failed to retrieve hostname, using localhost instead", "err", err)
-				hostname = "localhost"
-			}
-			c.Remote.Instance = hostname
 		}
 	}
 

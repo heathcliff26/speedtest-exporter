@@ -76,10 +76,16 @@ func TestValidConfigs(t *testing.T) {
 
 	for _, tCase := range tMatrix {
 		t.Run(tCase.Name, func(t *testing.T) {
+			assert := assert.New(t)
 			c, err := LoadConfig(tCase.Path, false)
 
+			if tCase.Result.Remote.Instance == "" {
+				assert.NotEmpty(c.Remote.Instance, "Instance should be set to hostname")
+				tCase.Result.Remote.Instance = c.Remote.Instance
+			}
+
 			require.NoError(t, err, "Should load config")
-			assert.Equal(t, tCase.Result, c)
+			assert.Equal(tCase.Result, c)
 		})
 	}
 }

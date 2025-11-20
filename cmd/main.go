@@ -86,7 +86,7 @@ func main() {
 
 	resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", time.Duration(cfg.Cache))
 
-	collector, err := collector.NewCollector(resultCache, s)
+	collector, err := collector.NewCollector(resultCache, s, cfg.Remote.Instance)
 	if err != nil {
 		slog.Error("Failed to create collector", "err", err)
 		os.Exit(1)
