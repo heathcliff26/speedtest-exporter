@@ -12,10 +12,11 @@ import (
 type Collector struct {
 	cache     *cache.Cache
 	speedtest speedtest.Speedtest
+	instance  string
 }
 
 var (
-	variableLabels    = []string{"ip", "isp"}
+	variableLabels    = []string{"ip", "isp", "instance"}
 	jitterLatencyDesc = prometheus.NewDesc("speedtest_jitter_latency_milliseconds", "Speedtest current Jitter in ms", variableLabels, nil)
 	pingDesc          = prometheus.NewDesc("speedtest_ping_latency_milliseconds", "Speedtest current Ping in ms", variableLabels, nil)
 	downloadSpeedDesc = prometheus.NewDesc("speedtest_download_megabits_per_second", "Speedtest current Download Speed in Mbit/s", variableLabels, nil)
@@ -33,13 +34,14 @@ var speedtestMutex sync.Mutex
 //	cacheTime: Minimum time between speedtest runs
 //	instance: Name of this instance, provided as label on all metrics
 //	speedtest: Instance of speedtest to use for collection metrics
-func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest) (*Collector, error) {
+func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest, instance string) (*Collector, error) {
 	if speedtest == nil {
 		return nil, ErrNoSpeedtest{}
 	}
 	return &Collector{
 		cache:     cache,
 		speedtest: speedtest,
+		instance:  instance,
 	}, nil
 }
 
@@ -73,7 +75,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	var up float64
 	if result.Success() {
 		up = 1
-		labelValues := []string{result.ClientIP(), result.ClientISP()}
+		labelValues := []string{result.ClientIP(), result.ClientISP(), c.instance}
 		ch <- prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, result.JitterLatency(), labelValues...)
 		ch <- prometheus.MustNewConstMetric(pingDesc, prometheus.GaugeValue, result.Ping(), labelValues...)
 		ch <- prometheus.MustNewConstMetric(downloadSpeedDesc, prometheus.GaugeValue, result.DownloadSpeed(), labelValues...)

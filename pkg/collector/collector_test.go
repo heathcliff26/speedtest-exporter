@@ -25,16 +25,17 @@ func TestNewCollector(t *testing.T) {
 	expectedCollector := &Collector{
 		cache:     c,
 		speedtest: s,
+		instance:  "testinstance",
 	}
 
-	actualCollector, err := NewCollector(c, s)
+	actualCollector, err := NewCollector(c, s, "testinstance")
 	require.NoError(t, err, "Should create new Collector")
 
 	assert := assert.New(t)
 
 	assert.Equal(expectedCollector, actualCollector)
 
-	_, err = NewCollector(nil, nil)
+	_, err = NewCollector(nil, nil, "testinstance")
 	assert.Equal(ErrNoSpeedtest{}, err)
 }
 
@@ -45,7 +46,7 @@ func TestResultFromCache(t *testing.T) {
 		speedtestRan = true
 	}
 
-	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s)
+	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s, "testinstance")
 	require.NoError(t, err, "Should create new Collector")
 
 	c.cache.Save(speedtest.NewFailedSpeedtestResult())
@@ -65,7 +66,7 @@ func TestRunSpeedtestWhenCacheExpired(t *testing.T) {
 		speedtestRan = true
 	}
 
-	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s)
+	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s, "testinstance")
 	require.NoError(t, err, "Should create new Collector")
 	result := c.getSpeedtestResult()
 
@@ -93,7 +94,7 @@ func TestSpeedtestIsNotRunConcurrently(t *testing.T) {
 		time.Sleep(10 * time.Second)
 	}
 
-	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s)
+	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s, "testinstance")
 	require.NoError(t, err, "Should create new Collector")
 
 	assert := assert.New(t)
@@ -117,14 +118,14 @@ func TestSpeedtestIsNotRunConcurrently(t *testing.T) {
 
 func TestCollect(t *testing.T) {
 	s := NewMockSpeedtest()
-	c, err := NewCollector(nil, s)
+	c, err := NewCollector(nil, s, "testinstance")
 	require.NoError(t, err, "Should create new Collector")
 
 	t.Run("Success", func(t *testing.T) {
 		ch := make(chan prometheus.Metric, 1)
 		go c.Collect(ch)
 
-		actualLabelValues := []string{mockSpeedtestResult.ClientIP(), mockSpeedtestResult.ClientISP()}
+		actualLabelValues := []string{mockSpeedtestResult.ClientIP(), mockSpeedtestResult.ClientISP(), "testinstance"}
 
 		actualMetric := <-ch
 		expectedMetric := prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, mockSpeedtestResult.JitterLatency(), actualLabelValues...)

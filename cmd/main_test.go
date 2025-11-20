@@ -50,7 +50,7 @@ func TestServerWriteTimeout(t *testing.T) {
 
 	s, err := createSpeedtest("")
 	require.NoError(err, "Should create speedtest")
-	c, err := collector.NewCollector(nil, s) // Ensure we do not use a cache
+	c, err := collector.NewCollector(nil, s, "testinstance") // Ensure we do not use a cache
 	require.NoError(err, "Should create collector")
 
 	reg := prometheus.NewRegistry()
