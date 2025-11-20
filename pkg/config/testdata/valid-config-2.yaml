@@ -6,5 +6,6 @@ remote:
   enable: true
   url: "https://example.org/"
   instance: "test"
+  jobName: "testjob"
   username: "somebody"
   password: "somebody's password"

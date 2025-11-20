@@ -18,6 +18,9 @@ func TestValidConfigs(t *testing.T) {
 		Cache:        Duration(time.Minute),
 		PersistCache: false,
 		SpeedtestCLI: "/path/to/speedtest",
+		Remote: RemoteConfig{
+			JobName: DEFAULT_REMOTE_JOB_NAME,
+		},
 	}
 	c2 := Config{
 		LogLevel:     "debug",
@@ -28,6 +31,7 @@ func TestValidConfigs(t *testing.T) {
 			Enable:   true,
 			URL:      "https://example.org/",
 			Instance: "test",
+			JobName:  "testjob",
 			Username: "somebody",
 			Password: "somebody's password",
 		},
@@ -41,6 +45,7 @@ func TestValidConfigs(t *testing.T) {
 			Enable:   true,
 			URL:      "https://example.org/",
 			Instance: "test",
+			JobName:  DEFAULT_REMOTE_JOB_NAME,
 		},
 	}
 	tMatrix := []struct {
@@ -123,12 +128,12 @@ func TestInvalidConfig(t *testing.T) {
 }
 
 func TestEnvSubstitution(t *testing.T) {
-	c := Config{
-		LogLevel:     "debug",
-		Port:         2080,
-		Cache:        Duration(time.Minute),
-		PersistCache: DEFAULT_PERSIST_CACHE,
-	}
+	c := DefaultConfig()
+	c.LogLevel = "debug"
+	c.Port = 2080
+	c.Cache = Duration(time.Minute)
+	c.PersistCache = DEFAULT_PERSIST_CACHE
+
 	t.Setenv("SPEEDTEST_TEST_LOG_LEVEL", c.LogLevel)
 	t.Setenv("SPEEDTEST_TEST_PORT", strconv.Itoa(c.Port))
 	t.Setenv("SPEEDTEST_TEST_CACHE", c.Cache.String())

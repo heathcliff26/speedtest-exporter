@@ -96,7 +96,7 @@ func main() {
 	reg.MustRegister(collector)
 
 	if cfg.Remote.Enable {
-		rwClient, err := promremote.NewWriteClient(cfg.Remote.URL, cfg.Remote.Instance, "integrations/speedtest", reg)
+		rwClient, err := promremote.NewWriteClient(cfg.Remote.URL, cfg.Remote.Instance, cfg.Remote.JobName, reg)
 		if err != nil {
 			slog.Error("Failed to create remote write client", "err", err)
 			os.Exit(1)
