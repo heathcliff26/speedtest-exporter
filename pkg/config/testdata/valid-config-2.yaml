@@ -1,11 +1,11 @@
 logLevel: "debug"
 port: 2080
+instance: "test"
 cache: "30m"
 persistCache: true
 remote:
   enable: true
   url: "https://example.org/"
-  instance: "test"
   jobName: "testjob"
   username: "somebody"
   password: "somebody's password"
