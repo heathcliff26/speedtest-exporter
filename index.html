@@ -63,7 +63,7 @@
 				
 				<option value="file3">github.com/heathcliff26/speedtest-exporter/pkg/collector/errors.go (0.0%)</option>
 				
-				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (91.9%)</option>
+				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (92.3%)</option>
 				
 				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/config/duration.go (90.9%)</option>
 				
@@ -181,7 +181,7 @@ func main() <span class="cov0" title="0">{
 
         <span class="cov0" title="0">resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", time.Duration(cfg.Cache))
 
-        collector, err := collector.NewCollector(resultCache, s, cfg.Remote.Instance)
+        collector, err := collector.NewCollector(resultCache, s, cfg.Instance)
         if err != nil </span><span class="cov0" title="0">{
                 slog.Error("Failed to create collector", "err", err)
                 os.Exit(1)
@@ -484,6 +484,7 @@ func init() <span class="cov8" title="1">{
 type Config struct {
         LogLevel     string       `json:"logLevel,omitempty"`
         Port         int          `json:"port,omitempty"`
+        Instance     string       `json:"instance,omitempty"`
         Cache        Duration     `json:"cache,omitempty"`
         PersistCache bool         `json:"persistCache,omitempty"`
         SpeedtestCLI string       `json:"speedtestCLI,omitempty"`
@@ -493,7 +494,7 @@ type Config struct {
 type RemoteConfig struct {
         Enable   bool   `json:"enable"`
         URL      string `json:"url"`
-        Instance string `json:"instance"`
+        Instance string `json:"instance,omitempty"`
         JobName  string `json:"jobName,omitempty"`
         Username string `json:"username,omitempty"`
         Password string `json:"password,omitempty"`
@@ -509,11 +510,11 @@ func DefaultConfig() Config <span class="cov8" title="1">{
         <span class="cov8" title="1">return Config{
                 LogLevel:     DEFAULT_LOG_LEVEL,
                 Port:         DEFAULT_PORT,
+                Instance:     hostname,
                 Cache:        DEFAULT_CACHE,
                 PersistCache: DEFAULT_PERSIST_CACHE,
                 Remote: RemoteConfig{
-                        Instance: hostname,
-                        JobName:  DEFAULT_REMOTE_JOB_NAME,
+                        JobName: DEFAULT_REMOTE_JOB_NAME,
                 },
         }</span>
 }
@@ -550,6 +551,10 @@ func LoadConfig(path string, env bool) (Config, error) <span class="cov8" title=
         <span class="cov8" title="1">err = setLogLevel(c.LogLevel)
         if err != nil </span><span class="cov0" title="0">{
                 return Config{}, err
+        }</span>
+
+        <span class="cov8" title="1">if c.Remote.Instance == "" </span><span class="cov8" title="1">{
+                c.Remote.Instance = c.Instance
         }</span>
 
         <span class="cov8" title="1">if c.Remote.Enable </span><span class="cov8" title="1">{
