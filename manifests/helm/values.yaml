@@ -31,8 +31,8 @@ config:
     password: ""
 
 cache:
-  # Storage class for the persistent volume claim
-  storageClassName: hostpath-hdd-ephemeral
+  # Storage class for the persistent volume claim. Leave empty to use default storage class
+  storageClassName: ""
   # Size of the persistent volume claim
   size: 1Mi
 
