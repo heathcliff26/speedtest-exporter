@@ -4,6 +4,8 @@ logLevel: "info"
 
 # Port for the metrics server
 port: 8080
+# Name of the instance, used to label metrics. Defaults to hostname when empty
+instance: ""
 # Time for which the last speedtest result will be cached.
 # Also used for the interval in which remote_write is invoked when enabled
 cache: "5m"
@@ -17,7 +19,7 @@ remote:
   enable: false
   # URL to prometheus remote_write endpoint
   url: ""
-  # Name of the instance, used to label metrics when performing remote_write. Defaults to hostname when empty
+  # Overwrite the instance label for remote write.
   instance: ""
   # Name of job under which metrics will be pushed
   jobName: "speedtest-exporter"

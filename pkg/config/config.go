@@ -33,6 +33,7 @@ func init() {
 type Config struct {
 	LogLevel     string       `json:"logLevel,omitempty"`
 	Port         int          `json:"port,omitempty"`
+	Instance     string       `json:"instance,omitempty"`
 	Cache        Duration     `json:"cache,omitempty"`
 	PersistCache bool         `json:"persistCache,omitempty"`
 	SpeedtestCLI string       `json:"speedtestCLI,omitempty"`
@@ -42,7 +43,7 @@ type Config struct {
 type RemoteConfig struct {
 	Enable   bool   `json:"enable"`
 	URL      string `json:"url"`
-	Instance string `json:"instance"`
+	Instance string `json:"instance,omitempty"`
 	JobName  string `json:"jobName,omitempty"`
 	Username string `json:"username,omitempty"`
 	Password string `json:"password,omitempty"`
@@ -58,11 +59,11 @@ func DefaultConfig() Config {
 	return Config{
 		LogLevel:     DEFAULT_LOG_LEVEL,
 		Port:         DEFAULT_PORT,
+		Instance:     hostname,
 		Cache:        DEFAULT_CACHE,
 		PersistCache: DEFAULT_PERSIST_CACHE,
 		Remote: RemoteConfig{
-			Instance: hostname,
-			JobName:  DEFAULT_REMOTE_JOB_NAME,
+			JobName: DEFAULT_REMOTE_JOB_NAME,
 		},
 	}
 }
@@ -99,6 +100,10 @@ func LoadConfig(path string, env bool) (Config, error) {
 	err = setLogLevel(c.LogLevel)
 	if err != nil {
 		return Config{}, err
+	}
+
+	if c.Remote.Instance == "" {
+		c.Remote.Instance = c.Instance
 	}
 
 	if c.Remote.Enable {

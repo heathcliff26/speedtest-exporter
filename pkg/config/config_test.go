@@ -15,16 +15,19 @@ func TestValidConfigs(t *testing.T) {
 	c1 := Config{
 		LogLevel:     "warn",
 		Port:         80,
+		Instance:     "test",
 		Cache:        Duration(time.Minute),
 		PersistCache: false,
 		SpeedtestCLI: "/path/to/speedtest",
 		Remote: RemoteConfig{
-			JobName: DEFAULT_REMOTE_JOB_NAME,
+			JobName:  DEFAULT_REMOTE_JOB_NAME,
+			Instance: "test",
 		},
 	}
 	c2 := Config{
 		LogLevel:     "debug",
 		Port:         2080,
+		Instance:     "test",
 		Cache:        Duration(30 * time.Minute),
 		PersistCache: true,
 		Remote: RemoteConfig{
@@ -39,6 +42,7 @@ func TestValidConfigs(t *testing.T) {
 	c3 := Config{
 		LogLevel:     "error",
 		Port:         DEFAULT_PORT,
+		Instance:     "another-instance",
 		Cache:        DEFAULT_CACHE,
 		PersistCache: DEFAULT_PERSIST_CACHE,
 		Remote: RemoteConfig{
@@ -78,11 +82,6 @@ func TestValidConfigs(t *testing.T) {
 		t.Run(tCase.Name, func(t *testing.T) {
 			assert := assert.New(t)
 			c, err := LoadConfig(tCase.Path, false)
-
-			if tCase.Result.Remote.Instance == "" {
-				assert.NotEmpty(c.Remote.Instance, "Instance should be set to hostname")
-				tCase.Result.Remote.Instance = c.Remote.Instance
-			}
 
 			require.NoError(t, err, "Should load config")
 			assert.Equal(tCase.Result, c)
@@ -139,6 +138,7 @@ func TestEnvSubstitution(t *testing.T) {
 	c.Port = 2080
 	c.Cache = Duration(time.Minute)
 	c.PersistCache = DEFAULT_PERSIST_CACHE
+	c.Remote.Instance = c.Instance
 
 	t.Setenv("SPEEDTEST_TEST_LOG_LEVEL", c.LogLevel)
 	t.Setenv("SPEEDTEST_TEST_PORT", strconv.Itoa(c.Port))
@@ -147,6 +147,9 @@ func TestEnvSubstitution(t *testing.T) {
 	res, err := LoadConfig("testdata/env-config.yaml", true)
 
 	assert := assert.New(t)
+
+	assert.NotEmpty(res.Instance, "Should initialize instance from hostname")
+	assert.Equal(res.Instance, res.Remote.Instance, "Should initialize remote instance from instance")
 
 	assert.NoError(err)
 	assert.Equal(c, res)

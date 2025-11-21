@@ -1,4 +1,5 @@
 logLevel: "error"
+instance: "another-instance"
 remote:
   enable: true
   url: "https://example.org/"
