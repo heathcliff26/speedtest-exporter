@@ -49,13 +49,15 @@ func TestResultFromCache(t *testing.T) {
 	c, err := NewCollector(cache.NewCache(false, "", defaultCacheTime), s, "testinstance")
 	require.NoError(t, err, "Should create new Collector")
 
-	c.cache.Save(speedtest.NewFailedSpeedtestResult())
+	expectedResult := speedtest.NewFailedSpeedtestResult()
+	cachedResult := *expectedResult
+	c.cache.Save(&cachedResult)
 
 	result := c.getSpeedtestResult()
 
 	assert := assert.New(t)
 
-	assert.Equal(speedtest.NewFailedSpeedtestResult(), result)
+	assert.Equal(expectedResult, result)
 	assert.False(speedtestRan, "Should not have called the mock speedtest")
 }
 
