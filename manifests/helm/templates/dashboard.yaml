@@ -1,0 +1,13 @@
+{{- if .Values.dashboard.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "speedtest-exporter.fullname" . }}-dashboard
+  namespace: {{ .Values.dashboard.namespace | default .Release.Namespace }}
+  labels:
+    grafana_dashboard: "1"
+    {{- include "speedtest-exporter.labels" . | nindent 4 }}
+data:
+  speedtest-exporter.json: |-
+{{ .Files.Get "dashboard.json" | indent 4 }}
+{{- end }}
