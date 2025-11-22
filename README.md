@@ -101,7 +101,7 @@ The following metrics are exported:
 
 A ready made dashboard for the exporter can be imported from json. The json file can be found [here](dashboard/dashboard.json).
 
-The dashboard is also published on grafana.com with the id [20115](https://grafana.com/grafana/dashboards/20115).
+The dashboard is also published on grafana.com with the id [20115](https://grafana.com/grafana/dashboards/20115-speedtest-dashboard/).
 
 Here is a preview of the dashboard:
 ![](images/dashboard.png)
