@@ -14,10 +14,17 @@ spec:
     - port: metrics
       scrapeTimeout: {{ .Values.servicemonitor.scrapeTimeout }}
       interval: {{ .Values.servicemonitor.interval }}
-      {{- with .Values.servicemonitor.relabelings }}
       relabelings:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.servicemonitor.relabelings }}
+        {{- toYaml .Values.servicemonitor.relabelings | nindent 8 }}
+        {{- else }}
+        - replacement: "speedtest-exporter"
+          action: replace
+          targetLabel: job
+        - replacement: {{ .Values.config.instance | default (include "speedtest-exporter.fullname" .) | quote }}
+          action: replace
+          targetLabel: instance
+        {{- end }}
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}

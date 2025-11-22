@@ -91,7 +91,11 @@ servicemonitor:
   scrapeTimeout: 1m
   # Relabelings for the ServiceMonitor
   relabelings: []
-    # - replacement: "my-cluster"
+    ## By default, these relabelings are configured.
+    # - replacement: "speedtest-exporter"
+    #   action: replace
+    #   targetLabel: job
+    # - replacement: "<instance>"
     #   action: replace
     #   targetLabel: instance
 
