@@ -147,3 +147,10 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# Configuration for the Grafana dashboard
+dashboard:
+  # Enable the dashboard ConfigMap
+  enabled: false
+  # Namespace to deploy the dashboard ConfigMap into. Defaults to the release namespace when empty
+  namespace: ""
