@@ -24,6 +24,8 @@ spec:
         - replacement: {{ .Values.config.instance | default (include "speedtest-exporter.fullname" .) | quote }}
           action: replace
           targetLabel: instance
+        - action: labeldrop
+          regex: pod
         {{- end }}
   namespaceSelector:
     matchNames:
