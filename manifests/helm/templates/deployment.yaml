@@ -7,6 +7,8 @@ metadata:
     {{- include "speedtest-exporter.labels" . | nindent 4 }}
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "speedtest-exporter.selectorLabels" . | nindent 6 }}
