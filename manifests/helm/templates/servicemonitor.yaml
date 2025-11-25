@@ -13,7 +13,7 @@ spec:
   endpoints:
     - port: metrics
       scrapeTimeout: {{ .Values.servicemonitor.scrapeTimeout }}
-      interval: {{ .Values.servicemonitor.interval }}
+      interval: {{ .Values.servicemonitor.interval | default .Values.config.cache | quote }}
       relabelings:
         {{- if .Values.servicemonitor.relabelings }}
         {{- toYaml .Values.servicemonitor.relabelings | nindent 8 }}

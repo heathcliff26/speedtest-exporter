@@ -85,8 +85,8 @@ servicemonitor:
   # Additional labels for the ServiceMonitor
   labels:
     release: monitoring
-  # Scrape interval
-  interval: 5m
+  # Scrape interval, defaults to cache duration
+  interval: ""
   # Scrape timeout
   scrapeTimeout: 1m
   # Relabelings for the ServiceMonitor
