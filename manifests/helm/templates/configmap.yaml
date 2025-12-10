@@ -6,4 +6,5 @@ metadata:
   labels:
     {{- include "speedtest-exporter.labels" . | nindent 4 }}
 data:
-  config.yaml: {{ .Values.config | toYaml | quote }}
+  config.yaml: |-
+{{- .Values.config | toYaml | nindent 4 }}
