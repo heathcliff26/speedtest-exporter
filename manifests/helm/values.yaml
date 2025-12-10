@@ -50,6 +50,10 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# Configure the environment variables for the container
+env: []
+envFrom: []
+
 # This is for setting Kubernetes Annotations to a Pod.
 podAnnotations: {}
 # This is for setting Kubernetes Labels to a Pod.
