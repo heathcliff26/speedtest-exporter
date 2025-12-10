@@ -59,7 +59,7 @@ func TestNewCache(t *testing.T) {
 		t.Run(tCase.Name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			cache := NewCache(tCase.Persist, tCase.Path, time.Minute)
+			cache := NewCache(tCase.Persist, tCase.Path, time.Minute+cacheTimeGracePeriod)
 
 			assert.Equal(tCase.ExpectedPersist, cache.persist, "Persist flag should be set correctly")
 			assert.Equal(tCase.Path, cache.path, "Path should be set correctly")
@@ -71,6 +71,22 @@ func TestNewCache(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("CacheTimeGracePeriod", func(t *testing.T) {
+		assert := assert.New(t)
+
+		cacheTime := cacheTimeGracePeriod
+		cache := NewCache(false, "", cacheTime)
+		assert.Equal(cacheTime, cache.cacheTime, "Cache time should be used directly when equal to grace period")
+
+		cacheTime = cacheTimeGracePeriod - time.Second
+		cache = NewCache(false, "", cacheTime)
+		assert.Equal(cacheTime, cache.cacheTime, "Cache time should be used directly when less than grace period")
+
+		cacheTime = cacheTimeGracePeriod + time.Second
+		cache = NewCache(false, "", cacheTime)
+		assert.Equal(time.Second, cache.cacheTime, "Cache time should be reduced by grace period when greater than grace period")
+	})
 }
 
 func TestCacheNil(t *testing.T) {

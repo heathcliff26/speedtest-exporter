@@ -7,6 +7,7 @@ port: 8080
 # Name of the instance, used to label metrics. Defaults to hostname when empty
 instance: ""
 # Time for which the last speedtest result will be cached.
+# The actual cache will expire about 1 minute earlier to ensure a new test is run when calling exactly on interval.
 # Also used for the interval in which remote_write is invoked when enabled
 cache: "5m"
 # Disable persisting the cache to disk by setting this to false
