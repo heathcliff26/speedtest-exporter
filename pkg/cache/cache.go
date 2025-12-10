@@ -10,9 +10,12 @@ import (
 	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
 )
 
-// Used to expire cache sooner.
-// Set to 1 minute to account for time it takes to perform the speedtest.
-const cacheTimeGracePeriod = time.Minute
+// Minimum grace period for cache.
+// Ensures that if the service is monitored in intervals, new tests will be run roughly every cacheTime.
+const (
+	minimumGraceDuration    = 30 * time.Second
+	additionalGraceDuration = 5 * time.Second
+)
 
 type Cache struct {
 	persist      bool
@@ -27,9 +30,6 @@ type Cache struct {
 // If the path is not writable, the cache will not persist to disk.
 // This function does not fail if it cannot read from disk, it will just log the error.
 func NewCache(persist bool, path string, cacheTime time.Duration) *Cache {
-	if cacheTime > cacheTimeGracePeriod {
-		cacheTime = cacheTime - cacheTimeGracePeriod
-	}
 	cache := &Cache{
 		persist:   persist,
 		path:      path,
@@ -87,9 +87,7 @@ func (c *Cache) Read() (result *speedtest.SpeedtestResult, valid bool) {
 		return nil, false
 	}
 
-	timestamp := c.cachedResult.TimestampAsTime()
-
-	return c.cachedResult, timestamp.Add(c.cacheTime).After(time.Now())
+	return c.cachedResult, c.expiresAt().After(time.Now())
 }
 
 // Save the given result to the cache.
@@ -121,12 +119,27 @@ func (c *Cache) Save(result *speedtest.SpeedtestResult) {
 
 // Return when the cache will expire
 func (c *Cache) ExpiresAt() time.Time {
-	if c == nil || c.cachedResult == nil {
+	if c == nil {
 		return time.Time{}
 	}
 	c.RLock()
 	defer c.RUnlock()
 
+	if c.cachedResult == nil {
+		return time.Time{}
+	}
+
+	return c.expiresAt()
+}
+
+// Return when the cache will expire, subtracting a grace period.
+// Should be called when already verified that c is not nil and c.cachedResult is not nil.
+// Assumes the caller holds at least a read lock.
+func (c *Cache) expiresAt() time.Time {
 	timestamp := c.cachedResult.TimestampAsTime()
-	return timestamp.Add(c.cacheTime)
+	gracePeriod := time.Duration(c.cachedResult.Duration())*time.Millisecond + additionalGraceDuration
+	if gracePeriod < minimumGraceDuration {
+		gracePeriod = minimumGraceDuration
+	}
+	return timestamp.Add(c.cacheTime).Add(-1 * gracePeriod)
 }
