@@ -46,7 +46,7 @@ func TestNewSpeedtestResult(t *testing.T) {
 func TestSpeedtestResultJSON(t *testing.T) {
 	assert := assert.New(t)
 
-	result := MockSpeedtestResult(231234)
+	result := MockSpeedtestResult(1234)
 
 	jsonData, err := result.MarshalJSON()
 	assert.NoError(err, "Should marshal SpeedtestResult to JSON without error")

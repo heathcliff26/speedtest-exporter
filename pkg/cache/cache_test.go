@@ -53,13 +53,20 @@ func TestNewCache(t *testing.T) {
 			ExpectedPersist:  true,
 			ShouldHaveResult: true,
 		},
+		{
+			Name:             "InitializeFromEmptyFile",
+			Persist:          true,
+			Path:             "testdata/empty-file",
+			ExpectedPersist:  true,
+			ShouldHaveResult: false,
+		},
 	}
 
 	for _, tCase := range tMatrix {
 		t.Run(tCase.Name, func(t *testing.T) {
 			assert := assert.New(t)
 
-			cache := NewCache(tCase.Persist, tCase.Path, time.Minute+cacheTimeGracePeriod)
+			cache := NewCache(tCase.Persist, tCase.Path, time.Minute)
 
 			assert.Equal(tCase.ExpectedPersist, cache.persist, "Persist flag should be set correctly")
 			assert.Equal(tCase.Path, cache.path, "Path should be set correctly")
@@ -71,22 +78,6 @@ func TestNewCache(t *testing.T) {
 			}
 		})
 	}
-
-	t.Run("CacheTimeGracePeriod", func(t *testing.T) {
-		assert := assert.New(t)
-
-		cacheTime := cacheTimeGracePeriod
-		cache := NewCache(false, "", cacheTime)
-		assert.Equal(cacheTime, cache.cacheTime, "Cache time should be used directly when equal to grace period")
-
-		cacheTime = cacheTimeGracePeriod - time.Second
-		cache = NewCache(false, "", cacheTime)
-		assert.Equal(cacheTime, cache.cacheTime, "Cache time should be used directly when less than grace period")
-
-		cacheTime = cacheTimeGracePeriod + time.Second
-		cache = NewCache(false, "", cacheTime)
-		assert.Equal(time.Second, cache.cacheTime, "Cache time should be reduced by grace period when greater than grace period")
-	})
 }
 
 func TestCacheNil(t *testing.T) {
@@ -197,17 +188,50 @@ func TestSave(t *testing.T) {
 		require.NoError(err, "Should unmarshal cached result from disk")
 		assert.Equal(expectedResult, diskResult, "Cached result on disk should match expected result")
 	})
+	t.Run("WriteError", func(t *testing.T) {
+		assert := assert.New(t)
+
+		c := &Cache{
+			path:      "/path/does/not/exist/cache.json",
+			cacheTime: time.Minute,
+			persist:   true,
+		}
+
+		result := speedtest.NewFailedSpeedtestResult()
+		assert.NotPanics(func() {
+			c.Save(result)
+		}, "Save should not panic on write error")
+
+		assert.Equal(result, c.cachedResult, "Should still cache the result in memory")
+	})
 }
 
 func TestExpiresAt(t *testing.T) {
-	assert := assert.New(t)
+	t.Run("ResultNil", func(t *testing.T) {
+		c := &Cache{
+			cacheTime:    time.Minute,
+			cachedResult: nil,
+		}
+		assert.Zero(t, c.ExpiresAt(), "Should return zero value if no result is set")
+	})
+	t.Run("MinimumGraceDuration", func(t *testing.T) {
+		expectedResult := speedtest.NewFailedSpeedtestResult()
+		c := &Cache{
+			cacheTime:    time.Minute,
+			cachedResult: expectedResult,
+		}
+		expectedExpiry := expectedResult.TimestampAsTime().Add(c.cacheTime).Add(-1 * minimumGraceDuration)
 
-	expectedResult := speedtest.NewFailedSpeedtestResult()
-	c := &Cache{
-		cacheTime:    time.Minute,
-		cachedResult: expectedResult,
-	}
-	expectedExpiry := expectedResult.TimestampAsTime().Add(c.cacheTime)
+		assert.Equal(t, expectedExpiry, c.ExpiresAt(), "ExpiresAt should return expiry time minus minimum grace duration")
+	})
+	t.Run("DynamicGraceDuration", func(t *testing.T) {
+		expectedResult := speedtest.MockSpeedtestResult(time.Now().UnixMilli())
+		c := &Cache{
+			cacheTime:    time.Minute,
+			cachedResult: expectedResult,
+		}
+		expectedExpiry := expectedResult.TimestampAsTime().Add(c.cacheTime).Add(-1 * (time.Duration(expectedResult.Duration())*time.Millisecond + additionalGraceDuration))
 
-	assert.Equal(expectedExpiry, c.ExpiresAt(), "ExpiresAt should return correct expiry time")
+		assert.Equal(t, expectedExpiry, c.ExpiresAt(), "ExpiresAt should return expiry time minus speedtest duration plus additional grace duration")
+	})
 }
