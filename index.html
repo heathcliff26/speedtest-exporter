@@ -59,7 +59,7 @@
 				
 				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (87.3%)</option>
 				
-				<option value="file2">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.3%)</option>
+				<option value="file2">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.4%)</option>
 				
 				<option value="file3">github.com/heathcliff26/speedtest-exporter/pkg/collector/errors.go (0.0%)</option>
 				
@@ -69,13 +69,13 @@
 				
 				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
 				
-				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (0.0%)</option>
+				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (37.5%)</option>
 				
 				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (78.6%)</option>
 				
 				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (65.5%)</option>
 				
-				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (97.1%)</option>
+				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (100.0%)</option>
 				
 				<option value="file11">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
 				
@@ -382,6 +382,7 @@ var (
         downloadSpeedDesc = prometheus.NewDesc("speedtest_download_megabits_per_second", "Speedtest current Download Speed in Mbit/s", variableLabels, nil)
         uploadSpeedDesc   = prometheus.NewDesc("speedtest_upload_megabits_per_second", "Speedtest current Upload Speed in Mbit/s", variableLabels, nil)
         dataUsedDesc      = prometheus.NewDesc("speedtest_data_used_megabytes", "Data used for speedtest in MB", variableLabels, nil)
+        durationDesc      = prometheus.NewDesc("speedtest_duration_milliseconds", "Duration of the speedtest in milliseconds", variableLabels, nil)
         upDesc            = prometheus.NewDesc("speedtest_up", "Indicates if the speedtest was successful", nil, nil)
 )
 
@@ -441,6 +442,7 @@ func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" t
                 ch &lt;- prometheus.MustNewConstMetric(downloadSpeedDesc, prometheus.GaugeValue, result.DownloadSpeed(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(uploadSpeedDesc, prometheus.GaugeValue, result.UploadSpeed(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(dataUsedDesc, prometheus.GaugeValue, result.DataUsed(), labelValues...)
+                ch &lt;- prometheus.MustNewConstMetric(durationDesc, prometheus.GaugeValue, float64(result.Duration()), labelValues...)
         }</span>
         <span class="cov8" title="1">ch &lt;- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, up)
         slog.Debug("Finished collection of speedtest metrics")</span>
@@ -653,6 +655,8 @@ func (e *ErrInvalidInterval) Error() string <span class="cov0" title="0">{
 		
 		<pre class="file" id="file7" style="display: none">package speedtest
 
+import "time"
+
 type MockSpeedtest struct {
         Callback func()
         Fail     bool
@@ -668,6 +672,12 @@ func (s *MockSpeedtest) Speedtest() *SpeedtestResult <span class="cov0" title="0
         }</span>
         <span class="cov0" title="0">return s.Result</span>
 }
+
+func MockSpeedtestResult(timestamp int64) *SpeedtestResult <span class="cov8" title="1">{
+        result := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1", 231234*time.Millisecond)
+        result.timestamp = timestamp
+        return result
+}</span>
 </pre>
 		
 		<pre class="file" id="file8" style="display: none">package speedtest
@@ -737,9 +747,9 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1"
         uploadMbps := convertBytesToMbits(out.Upload.Bandwidth)
         dataUsed := convertBytesToMB(out.Download.Bytes) + convertBytesToMB(out.Upload.Bytes)
 
-        res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP)
+        res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP, time.Since(start))
 
-        printSuccessMessage(res, time.Since(start))
+        printSuccessMessage(res)
 
         return res</span>
 }
@@ -799,9 +809,9 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">
         uploadMbps := convertBytesToMbits(server.ULSpeed)
         dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
 
-        res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP)
+        res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP, time.Since(start))
 
-        printSuccessMessage(res, time.Since(start))
+        printSuccessMessage(res)
 
         return res</span>
 }
@@ -829,7 +839,8 @@ type SpeedtestResult struct {
         clientISP     string
         clientIP      string
         success       bool
-        timestamp     int64
+        timestamp     int64 // milliseconds since Unix epoch
+        duration      int64 // milliseconds
 }
 
 // Create a new SpeedtestResult for a failed speedtest.
@@ -841,7 +852,7 @@ func NewFailedSpeedtestResult() *SpeedtestResult <span class="cov8" title="1">{
 }</span>
 
 // Create a new SpeedtestResult from a successful speedrun
-func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string) *SpeedtestResult <span class="cov8" title="1">{
+func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string, duration time.Duration) *SpeedtestResult <span class="cov8" title="1">{
         return &amp;SpeedtestResult{
                 jitterLatency: jitterLatency,
                 ping:          ping,
@@ -854,6 +865,7 @@ func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUse
                 clientIP:      clientIP,
                 success:       true,
                 timestamp:     time.Now().UnixMilli(),
+                duration:      duration.Milliseconds(),
         }
 }</span>
 
@@ -918,30 +930,30 @@ func (r *SpeedtestResult) TimestampAsTime() time.Time <span class="cov8" title="
         return time.UnixMilli(r.timestamp)
 }</span>
 
-// Used for testing purposes only.
-// Sets the timestamp of the speedtest result to the given time.
-func (r *SpeedtestResult) DebugSetTimestamp(ts time.Time) <span class="cov0" title="0">{
-        r.timestamp = ts.UnixMilli()
+// Duration of the speedtest in milliseconds
+func (r *SpeedtestResult) Duration() int64 <span class="cov8" title="1">{
+        return r.duration
 }</span>
+
+type speedtestResultJSONAlias struct {
+        JitterLatency float64 `json:"jitter_latency_ms"`
+        Ping          float64 `json:"ping_ms"`
+        DownloadSpeed float64 `json:"download_mbps"`
+        UploadSpeed   float64 `json:"upload_mbps"`
+        DataUsed      float64 `json:"data_used_mb"`
+        ServerID      string  `json:"server_id"`
+        ServerHost    string  `json:"server_host"`
+        ClientISP     string  `json:"client_isp"`
+        ClientIP      string  `json:"client_ip"`
+        Success       bool    `json:"success"`
+        Timestamp     int64   `json:"timestamp"`
+        Duration      int64   `json:"duration_ms"`
+}
 
 // MarshalJSON implements json.Marshaler so the (unexported) fields of
 // SpeedtestResult can be serialized with meaningful JSON keys.
 func (r *SpeedtestResult) MarshalJSON() ([]byte, error) <span class="cov8" title="1">{
-        type jsonAlias struct {
-                JitterLatency float64 `json:"jitter_latency_ms"`
-                Ping          float64 `json:"ping_ms"`
-                DownloadSpeed float64 `json:"download_mbps"`
-                UploadSpeed   float64 `json:"upload_mbps"`
-                DataUsed      float64 `json:"data_used_mb"`
-                ServerID      string  `json:"server_id"`
-                ServerHost    string  `json:"server_host"`
-                ClientISP     string  `json:"client_isp"`
-                ClientIP      string  `json:"client_ip"`
-                Success       bool    `json:"success"`
-                Timestamp     int64   `json:"timestamp"`
-        }
-
-        a := jsonAlias{
+        a := speedtestResultJSONAlias{
                 JitterLatency: r.jitterLatency,
                 Ping:          r.ping,
                 DownloadSpeed: r.downloadSpeed,
@@ -953,6 +965,7 @@ func (r *SpeedtestResult) MarshalJSON() ([]byte, error) <span class="cov8" title
                 ClientIP:      r.clientIP,
                 Success:       r.success,
                 Timestamp:     r.timestamp,
+                Duration:      r.duration,
         }
 
         return json.MarshalIndent(a, "", "  ")
@@ -961,21 +974,7 @@ func (r *SpeedtestResult) MarshalJSON() ([]byte, error) <span class="cov8" title
 // UnmarshalJSON implements json.Unmarshaler so JSON with the same keys used
 // in MarshalJSON can be decoded back into a SpeedtestResult with unexported fields.
 func (r *SpeedtestResult) UnmarshalJSON(data []byte) error <span class="cov8" title="1">{
-        type jsonAlias struct {
-                JitterLatency float64 `json:"jitter_latency_ms"`
-                Ping          float64 `json:"ping_ms"`
-                DownloadSpeed float64 `json:"download_mbps"`
-                UploadSpeed   float64 `json:"upload_mbps"`
-                DataUsed      float64 `json:"data_used_mb"`
-                ServerID      string  `json:"server_id"`
-                ServerHost    string  `json:"server_host"`
-                ClientISP     string  `json:"client_isp"`
-                ClientIP      string  `json:"client_ip"`
-                Success       bool    `json:"success"`
-                Timestamp     int64   `json:"timestamp"`
-        }
-
-        var a jsonAlias
+        var a speedtestResultJSONAlias
         if err := json.Unmarshal(data, &amp;a); err != nil </span><span class="cov8" title="1">{
                 return err
         }</span>
@@ -991,6 +990,7 @@ func (r *SpeedtestResult) UnmarshalJSON(data []byte) error <span class="cov8" ti
         r.clientIP = a.ClientIP
         r.success = a.Success
         r.timestamp = a.Timestamp
+        r.duration = a.Duration
 
         return nil</span>
 }
@@ -1021,7 +1021,7 @@ func convertBytesToMB[T Number](bytes T) float64 <span class="cov8" title="1">{
 }</span>
 
 // Print the log message for a successful speedtest
-func printSuccessMessage(res *SpeedtestResult, elapsedTime time.Duration) <span class="cov8" title="1">{
+func printSuccessMessage(res *SpeedtestResult) <span class="cov8" title="1">{
         slog.Info("Successfully ran speedtest",
                 slog.Float64("jitterLatency", res.JitterLatency()),
                 slog.Float64("ping", res.Ping()),
@@ -1032,7 +1032,7 @@ func printSuccessMessage(res *SpeedtestResult, elapsedTime time.Duration) <span 
                 slog.String("serverHost", res.ServerHost()),
                 slog.String("isp", res.ClientISP()),
                 slog.String("ip", res.ClientIP()),
-                slog.Duration("took", elapsedTime),
+                slog.Duration("duration", time.Duration(res.Duration())*time.Millisecond),
         )
 }</span>
 </pre>
