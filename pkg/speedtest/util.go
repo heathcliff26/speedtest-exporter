@@ -23,7 +23,7 @@ func convertBytesToMB[T Number](bytes T) float64 {
 }
 
 // Print the log message for a successful speedtest
-func printSuccessMessage(res *SpeedtestResult, elapsedTime time.Duration) {
+func printSuccessMessage(res *SpeedtestResult) {
 	slog.Info("Successfully ran speedtest",
 		slog.Float64("jitterLatency", res.JitterLatency()),
 		slog.Float64("ping", res.Ping()),
@@ -34,6 +34,6 @@ func printSuccessMessage(res *SpeedtestResult, elapsedTime time.Duration) {
 		slog.String("serverHost", res.ServerHost()),
 		slog.String("isp", res.ClientISP()),
 		slog.String("ip", res.ClientIP()),
-		slog.Duration("took", elapsedTime),
+		slog.Duration("duration", time.Duration(res.Duration())*time.Millisecond),
 	)
 }

@@ -52,9 +52,9 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 	uploadMbps := convertBytesToMbits(server.ULSpeed)
 	dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
 
-	res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP)
+	res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP, time.Since(start))
 
-	printSuccessMessage(res, time.Since(start))
+	printSuccessMessage(res)
 
 	return res
 }

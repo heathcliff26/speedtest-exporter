@@ -22,6 +22,7 @@ var (
 	downloadSpeedDesc = prometheus.NewDesc("speedtest_download_megabits_per_second", "Speedtest current Download Speed in Mbit/s", variableLabels, nil)
 	uploadSpeedDesc   = prometheus.NewDesc("speedtest_upload_megabits_per_second", "Speedtest current Upload Speed in Mbit/s", variableLabels, nil)
 	dataUsedDesc      = prometheus.NewDesc("speedtest_data_used_megabytes", "Data used for speedtest in MB", variableLabels, nil)
+	durationDesc      = prometheus.NewDesc("speedtest_duration_milliseconds", "Duration of the speedtest in milliseconds", variableLabels, nil)
 	upDesc            = prometheus.NewDesc("speedtest_up", "Indicates if the speedtest was successful", nil, nil)
 )
 
@@ -81,6 +82,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(downloadSpeedDesc, prometheus.GaugeValue, result.DownloadSpeed(), labelValues...)
 		ch <- prometheus.MustNewConstMetric(uploadSpeedDesc, prometheus.GaugeValue, result.UploadSpeed(), labelValues...)
 		ch <- prometheus.MustNewConstMetric(dataUsedDesc, prometheus.GaugeValue, result.DataUsed(), labelValues...)
+		ch <- prometheus.MustNewConstMetric(durationDesc, prometheus.GaugeValue, float64(result.Duration()), labelValues...)
 	}
 	ch <- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, up)
 	slog.Debug("Finished collection of speedtest metrics")

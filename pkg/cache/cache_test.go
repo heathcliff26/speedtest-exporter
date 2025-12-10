@@ -145,8 +145,7 @@ func TestRead(t *testing.T) {
 	t.Run("ExpiredCache", func(t *testing.T) {
 		assert := assert.New(t)
 
-		expectedResult := speedtest.NewFailedSpeedtestResult()
-		expectedResult.DebugSetTimestamp(time.Now().Add(-2 * time.Minute))
+		expectedResult := speedtest.MockSpeedtestResult(time.Now().Add(-10 * time.Minute).UnixMilli())
 		c := &Cache{
 			cacheTime:    time.Minute,
 			cachedResult: expectedResult,

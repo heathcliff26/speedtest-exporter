@@ -20,7 +20,8 @@ type SpeedtestResult struct {
 	clientISP     string
 	clientIP      string
 	success       bool
-	timestamp     int64
+	timestamp     int64 // milliseconds since Unix epoch
+	duration      int64 // milliseconds
 }
 
 // Create a new SpeedtestResult for a failed speedtest.
@@ -32,7 +33,7 @@ func NewFailedSpeedtestResult() *SpeedtestResult {
 }
 
 // Create a new SpeedtestResult from a successful speedrun
-func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string) *SpeedtestResult {
+func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string, duration time.Duration) *SpeedtestResult {
 	return &SpeedtestResult{
 		jitterLatency: jitterLatency,
 		ping:          ping,
@@ -45,6 +46,7 @@ func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUse
 		clientIP:      clientIP,
 		success:       true,
 		timestamp:     time.Now().UnixMilli(),
+		duration:      duration.Milliseconds(),
 	}
 }
 
@@ -109,30 +111,30 @@ func (r *SpeedtestResult) TimestampAsTime() time.Time {
 	return time.UnixMilli(r.timestamp)
 }
 
-// Used for testing purposes only.
-// Sets the timestamp of the speedtest result to the given time.
-func (r *SpeedtestResult) DebugSetTimestamp(ts time.Time) {
-	r.timestamp = ts.UnixMilli()
+// Duration of the speedtest in milliseconds
+func (r *SpeedtestResult) Duration() int64 {
+	return r.duration
+}
+
+type speedtestResultJSONAlias struct {
+	JitterLatency float64 `json:"jitter_latency_ms"`
+	Ping          float64 `json:"ping_ms"`
+	DownloadSpeed float64 `json:"download_mbps"`
+	UploadSpeed   float64 `json:"upload_mbps"`
+	DataUsed      float64 `json:"data_used_mb"`
+	ServerID      string  `json:"server_id"`
+	ServerHost    string  `json:"server_host"`
+	ClientISP     string  `json:"client_isp"`
+	ClientIP      string  `json:"client_ip"`
+	Success       bool    `json:"success"`
+	Timestamp     int64   `json:"timestamp"`
+	Duration      int64   `json:"duration_ms"`
 }
 
 // MarshalJSON implements json.Marshaler so the (unexported) fields of
 // SpeedtestResult can be serialized with meaningful JSON keys.
 func (r *SpeedtestResult) MarshalJSON() ([]byte, error) {
-	type jsonAlias struct {
-		JitterLatency float64 `json:"jitter_latency_ms"`
-		Ping          float64 `json:"ping_ms"`
-		DownloadSpeed float64 `json:"download_mbps"`
-		UploadSpeed   float64 `json:"upload_mbps"`
-		DataUsed      float64 `json:"data_used_mb"`
-		ServerID      string  `json:"server_id"`
-		ServerHost    string  `json:"server_host"`
-		ClientISP     string  `json:"client_isp"`
-		ClientIP      string  `json:"client_ip"`
-		Success       bool    `json:"success"`
-		Timestamp     int64   `json:"timestamp"`
-	}
-
-	a := jsonAlias{
+	a := speedtestResultJSONAlias{
 		JitterLatency: r.jitterLatency,
 		Ping:          r.ping,
 		DownloadSpeed: r.downloadSpeed,
@@ -144,6 +146,7 @@ func (r *SpeedtestResult) MarshalJSON() ([]byte, error) {
 		ClientIP:      r.clientIP,
 		Success:       r.success,
 		Timestamp:     r.timestamp,
+		Duration:      r.duration,
 	}
 
 	return json.MarshalIndent(a, "", "  ")
@@ -152,21 +155,7 @@ func (r *SpeedtestResult) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON implements json.Unmarshaler so JSON with the same keys used
 // in MarshalJSON can be decoded back into a SpeedtestResult with unexported fields.
 func (r *SpeedtestResult) UnmarshalJSON(data []byte) error {
-	type jsonAlias struct {
-		JitterLatency float64 `json:"jitter_latency_ms"`
-		Ping          float64 `json:"ping_ms"`
-		DownloadSpeed float64 `json:"download_mbps"`
-		UploadSpeed   float64 `json:"upload_mbps"`
-		DataUsed      float64 `json:"data_used_mb"`
-		ServerID      string  `json:"server_id"`
-		ServerHost    string  `json:"server_host"`
-		ClientISP     string  `json:"client_isp"`
-		ClientIP      string  `json:"client_ip"`
-		Success       bool    `json:"success"`
-		Timestamp     int64   `json:"timestamp"`
-	}
-
-	var a jsonAlias
+	var a speedtestResultJSONAlias
 	if err := json.Unmarshal(data, &a); err != nil {
 		return err
 	}
@@ -182,6 +171,7 @@ func (r *SpeedtestResult) UnmarshalJSON(data []byte) error {
 	r.clientIP = a.ClientIP
 	r.success = a.Success
 	r.timestamp = a.Timestamp
+	r.duration = a.Duration
 
 	return nil
 }

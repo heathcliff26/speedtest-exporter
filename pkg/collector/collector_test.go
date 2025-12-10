@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var mockSpeedtestResult = speedtest.NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1")
+var mockSpeedtestResult = speedtest.MockSpeedtestResult(time.Now().UnixMilli())
 
 const defaultCacheTime = 5 * time.Minute
 
@@ -147,6 +147,10 @@ func TestCollect(t *testing.T) {
 
 		actualMetric = <-ch
 		expectedMetric = prometheus.MustNewConstMetric(dataUsedDesc, prometheus.GaugeValue, mockSpeedtestResult.DataUsed(), actualLabelValues...)
+		assert.Equal(t, expectedMetric, actualMetric)
+
+		actualMetric = <-ch
+		expectedMetric = prometheus.MustNewConstMetric(durationDesc, prometheus.GaugeValue, float64(mockSpeedtestResult.Duration()), actualLabelValues...)
 		assert.Equal(t, expectedMetric, actualMetric)
 
 		actualMetric = <-ch

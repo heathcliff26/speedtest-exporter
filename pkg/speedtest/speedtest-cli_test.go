@@ -32,11 +32,12 @@ func TestRunSpeedtestForCLI(t *testing.T) {
 		return exec.Command("bash", "-c", path)
 	}
 
-	expectedResult := NewSpeedtestResult(0.629, 17.148, 931.564032, 49.4518, 1141.3079899999998, "60440", "speedtest.hannover.jonasdevries.de", "Some ISP", "100.107.156.96")
+	expectedResult := NewSpeedtestResult(0.629, 17.148, 931.564032, 49.4518, 1141.3079899999998, "60440", "speedtest.hannover.jonasdevries.de", "Some ISP", "100.107.156.96", 0)
 
 	result := s.Speedtest()
 
 	expectedResult.timestamp = result.timestamp // sync timestamps for comparison
+	expectedResult.duration = result.duration   // sync duration for comparison
 
 	assert.Equal(t, result, expectedResult)
 }

@@ -33,9 +33,10 @@ func TestNewSpeedtestResult(t *testing.T) {
 		clientISP:     "Foo Corp.",
 		clientIP:      "127.0.0.1",
 		success:       true,
+		duration:      231234,
 	}
 
-	actualResult := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1")
+	actualResult := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1", 231234*time.Millisecond)
 
 	assert.InDelta(time.Now().UnixMilli(), actualResult.Timestamp(), 10, "Timestamp should be close to current time")
 	expectedResult.timestamp = actualResult.timestamp // align timestamps for comparison
@@ -45,7 +46,7 @@ func TestNewSpeedtestResult(t *testing.T) {
 func TestSpeedtestResultJSON(t *testing.T) {
 	assert := assert.New(t)
 
-	result := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1")
+	result := MockSpeedtestResult(231234)
 
 	jsonData, err := result.MarshalJSON()
 	assert.NoError(err, "Should marshal SpeedtestResult to JSON without error")
@@ -63,7 +64,7 @@ func TestSpeedtestResultJSON(t *testing.T) {
 }
 
 func TestSpeedtestResultTimestampAsTime(t *testing.T) {
-	r := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1")
+	r := MockSpeedtestResult(123456789)
 
 	assert.Equal(t, time.UnixMilli(r.timestamp), r.TimestampAsTime(), "TimestampAsTime should return correct time.Time representation")
 }
