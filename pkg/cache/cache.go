@@ -10,6 +10,10 @@ import (
 	"github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
 )
 
+// Used to expire cache sooner.
+// Set to 1 minute to account for time it takes to perform the speedtest.
+const cacheTimeGracePeriod = time.Minute
+
 type Cache struct {
 	persist      bool
 	path         string
@@ -23,6 +27,9 @@ type Cache struct {
 // If the path is not writable, the cache will not persist to disk.
 // This function does not fail if it cannot read from disk, it will just log the error.
 func NewCache(persist bool, path string, cacheTime time.Duration) *Cache {
+	if cacheTime > cacheTimeGracePeriod {
+		cacheTime = cacheTime - cacheTimeGracePeriod
+	}
 	cache := &Cache{
 		persist:   persist,
 		path:      path,
