@@ -65,9 +65,9 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult {
 	uploadMbps := convertBytesToMbits(out.Upload.Bandwidth)
 	dataUsed := convertBytesToMB(out.Download.Bytes) + convertBytesToMB(out.Upload.Bytes)
 
-	res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP)
+	res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP, time.Since(start))
 
-	printSuccessMessage(res, time.Since(start))
+	printSuccessMessage(res)
 
 	return res
 }

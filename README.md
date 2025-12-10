@@ -35,8 +35,9 @@ One important functionality is that this projects implements prometheus remote_w
 
 | Container Registry                                                                                      | Image                                       |
 | ------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| [Github Container](https://github.com/users/heathcliff26/packages/container/package/speedtest-exporter) | `ghcr.io/heathcliff26/speedtest-exporter`   |
-| [Docker Hub](https://hub.docker.com/r/heathcliff26/speedtest-exporter)                  | `docker.io/heathcliff26/speedtest-exporter` |
+| [GitHub Container](https://github.com/users/heathcliff26/packages/container/package/speedtest-exporter) | `ghcr.io/heathcliff26/speedtest-exporter`   |
+| [Docker Hub](https://hub.docker.com/r/heathcliff26/speedtest-exporter)                                  | `docker.io/heathcliff26/speedtest-exporter` |
+| [Quay.io](https://quay.io/repository/heathcliff26/speedtest-exporter)                                   | `quay.io/heathcliff26/speedtest-exporter`   |
 
 ### Tags
 
@@ -95,6 +96,7 @@ The following metrics are exported:
 | `speedtest_download_megabits_per_second` | Speedtest current Download Speed in Mbit/s |
 | `speedtest_upload_megabits_per_second`   | Speedtest current Upload Speed in Mbit/s   |
 | `speedtest_data_used_megabytes`          | Data used for speedtest in MB              |
+| `speedtest_duration_milliseconds`        | Duration of the speedtest in milliseconds  |
 | `speedtest_up`                           | Indicates if the speedtest was successful  |
 
 ## Dashboard
