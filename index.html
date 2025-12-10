@@ -57,7 +57,7 @@
 				
 				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (24.1%)</option>
 				
-				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (87.3%)</option>
+				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (93.1%)</option>
 				
 				<option value="file2">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (96.4%)</option>
 				
@@ -236,9 +236,12 @@ import (
         "github.com/heathcliff26/speedtest-exporter/pkg/speedtest"
 )
 
-// Used to expire cache sooner.
-// Set to 1 minute to account for time it takes to perform the speedtest.
-const cacheTimeGracePeriod = time.Minute
+// Minimum grace period for cache.
+// Ensures that if the service is monitored in intervals, new tests will be run roughly every cacheTime.
+const (
+        minimumGraceDuration    = 30 * time.Second
+        additionalGraceDuration = 5 * time.Second
+)
 
 type Cache struct {
         persist      bool
@@ -253,10 +256,7 @@ type Cache struct {
 // If the path is not writable, the cache will not persist to disk.
 // This function does not fail if it cannot read from disk, it will just log the error.
 func NewCache(persist bool, path string, cacheTime time.Duration) *Cache <span class="cov8" title="1">{
-        if cacheTime &gt; cacheTimeGracePeriod </span><span class="cov8" title="1">{
-                cacheTime = cacheTime - cacheTimeGracePeriod
-        }</span>
-        <span class="cov8" title="1">cache := &amp;Cache{
+        cache := &amp;Cache{
                 persist:   persist,
                 path:      path,
                 cacheTime: cacheTime,
@@ -284,7 +284,7 @@ func NewCache(persist bool, path string, cacheTime time.Duration) *Cache <span c
                 return cache
         }</span>
 
-        <span class="cov8" title="1">if len(data) == 0 </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if len(data) == 0 </span><span class="cov8" title="1">{
                 slog.Info("Cache file is empty, starting with empty cache", slog.String("file", cache.path))
                 return cache
         }</span>
@@ -313,9 +313,7 @@ func (c *Cache) Read() (result *speedtest.SpeedtestResult, valid bool) <span cla
                 return nil, false
         }</span>
 
-        <span class="cov8" title="1">timestamp := c.cachedResult.TimestampAsTime()
-
-        return c.cachedResult, timestamp.Add(c.cacheTime).After(time.Now())</span>
+        <span class="cov8" title="1">return c.cachedResult, c.expiresAt().After(time.Now())</span>
 }
 
 // Save the given result to the cache.
@@ -340,21 +338,36 @@ func (c *Cache) Save(result *speedtest.SpeedtestResult) <span class="cov8" title
         }</span>
         // #nosec G306: Cache does not contain sensitive data, can be world readable
         <span class="cov8" title="1">err = os.WriteFile(c.path, data, 0644)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 slog.Error("Could not write cache to disk", slog.String("file", c.path), slog.Any("error", err))
         }</span>
 }
 
 // Return when the cache will expire
 func (c *Cache) ExpiresAt() time.Time <span class="cov8" title="1">{
-        if c == nil || c.cachedResult == nil </span><span class="cov8" title="1">{
+        if c == nil </span><span class="cov8" title="1">{
                 return time.Time{}
         }</span>
         <span class="cov8" title="1">c.RLock()
         defer c.RUnlock()
 
+        if c.cachedResult == nil </span><span class="cov8" title="1">{
+                return time.Time{}
+        }</span>
+
+        <span class="cov8" title="1">return c.expiresAt()</span>
+}
+
+// Return when the cache will expire, subtracting a grace period.
+// Should be called when already verified that c is not nil and c.cachedResult is not nil.
+// Assumes the caller holds at least a read lock.
+func (c *Cache) expiresAt() time.Time <span class="cov8" title="1">{
         timestamp := c.cachedResult.TimestampAsTime()
-        return timestamp.Add(c.cacheTime)</span>
+        gracePeriod := time.Duration(c.cachedResult.Duration())*time.Millisecond + additionalGraceDuration
+        if gracePeriod &lt; minimumGraceDuration </span><span class="cov8" title="1">{
+                gracePeriod = minimumGraceDuration
+        }</span>
+        <span class="cov8" title="1">return timestamp.Add(c.cacheTime).Add(-1 * gracePeriod)</span>
 }
 </pre>
 		
@@ -674,7 +687,7 @@ func (s *MockSpeedtest) Speedtest() *SpeedtestResult <span class="cov0" title="0
 }
 
 func MockSpeedtestResult(timestamp int64) *SpeedtestResult <span class="cov8" title="1">{
-        result := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1", 231234*time.Millisecond)
+        result := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1", 251234*time.Millisecond)
         result.timestamp = timestamp
         return result
 }</span>
