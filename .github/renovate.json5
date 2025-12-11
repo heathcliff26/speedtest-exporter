@@ -7,6 +7,7 @@
     ":dependencyDashboard",
     ":semanticCommits",
     ":automergeDigest",
+    "github>heathcliff26/ci//renovate/automerge-golang.json5",
     "github>heathcliff26/ci//renovate/commitMessage.json5",
     "github>heathcliff26/ci//renovate/customManagers.json5",
     "github>heathcliff26/ci//renovate/group-gomod.json5",
