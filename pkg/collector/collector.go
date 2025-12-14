@@ -48,7 +48,13 @@ func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest, instance st
 
 // Implements the Describe function for prometheus.Collector
 func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
-	prometheus.DescribeByCollect(c, ch)
+	ch <- jitterLatencyDesc
+	ch <- pingDesc
+	ch <- downloadSpeedDesc
+	ch <- uploadSpeedDesc
+	ch <- dataUsedDesc
+	ch <- durationDesc
+	ch <- upDesc
 }
 
 // Concurrency safe function to get the latest result of the speedtest.
