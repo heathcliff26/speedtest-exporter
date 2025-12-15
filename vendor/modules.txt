@@ -22,6 +22,9 @@ github.com/grafana/regexp/syntax
 # github.com/heathcliff26/promremote v1.0.20
 ## explicit; go 1.24.0
 github.com/heathcliff26/promremote/promremote
+# github.com/heathcliff26/simple-fileserver v1.2.15
+## explicit; go 1.24.0
+github.com/heathcliff26/simple-fileserver/pkg/middleware
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
