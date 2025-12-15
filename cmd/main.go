@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/heathcliff26/promremote/promremote"
+	"github.com/heathcliff26/simple-fileserver/pkg/middleware"
 	"github.com/heathcliff26/speedtest-exporter/pkg/cache"
 	"github.com/heathcliff26/speedtest-exporter/pkg/collector"
 	"github.com/heathcliff26/speedtest-exporter/pkg/config"
@@ -52,7 +53,7 @@ func createSpeedtest(path string) (speedtest.Speedtest, error) {
 func createServer(port int, reg *prometheus.Registry) *http.Server {
 	router := http.NewServeMux()
 	router.HandleFunc("/", ServerRootHandler)
-	router.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
+	router.Handle("/metrics", middleware.Logging(promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg})))
 
 	return &http.Server{
 		Addr:        ":" + strconv.Itoa(port),

@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/heathcliff26/promremote v1.0.20
+	github.com/heathcliff26/simple-fileserver v1.2.15
 	github.com/prometheus/client_golang v1.23.2
 	github.com/showwin/speedtest-go v1.7.10
 	github.com/stretchr/testify v1.11.1

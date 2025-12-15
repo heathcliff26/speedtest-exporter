@@ -14,6 +14,8 @@ github.com/grafana/regexp v0.0.0-20250905093917-f7b3be9d1853 h1:cLN4IBkmkYZNnk7E
 github.com/grafana/regexp v0.0.0-20250905093917-f7b3be9d1853/go.mod h1:+JKpmjMGhpgPL+rXZ5nsZieVzvarn86asRlBg4uNGnk=
 github.com/heathcliff26/promremote v1.0.20 h1:6ZqRbXcuBvVaX1E8+mD64M5aVvRhhxdp4JzVAbCKyeI=
 github.com/heathcliff26/promremote v1.0.20/go.mod h1:dsCRKcdmlb8t0mKLTGjsh6F99nP9MsyZztUsUk82z8U=
+github.com/heathcliff26/simple-fileserver v1.2.15 h1:AD8e7uk99gDz+VK2fS3ZNf0/mbfOkJhncHpKoHC26B0=
+github.com/heathcliff26/simple-fileserver v1.2.15/go.mod h1:Up1E8pwDjBtYdAOB+40ZrUOZ2nVjlCdQB3DkrkUAiqs=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.18.1 h1:bcSGx7UbpBqMChDtsF28Lw6v/G94LPrrbMbdC3JH2co=
