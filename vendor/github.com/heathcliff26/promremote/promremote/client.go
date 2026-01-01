@@ -9,7 +9,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/golang/snappy"
+	"github.com/klauspost/compress/snappy"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/prometheus/model/timestamp"
@@ -190,6 +190,9 @@ func (c *Client) collect() ([]prompb.TimeSeries, error) {
 // Does not block main thread execution
 func (c *Client) Run(interval time.Duration, quit chan bool) {
 	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		slog.Debug("Starting remote_write client")
 		for {
 			ts, err := c.collect()
 			if err != nil {
@@ -199,20 +202,14 @@ func (c *Client) Run(interval time.Duration, quit chan bool) {
 			if err != nil {
 				slog.Error("Failed to send metrics to remote endpoint", "err", err)
 			} else {
-				slog.Debug("Successfully send metrics via remote_write")
+				slog.Debug("Successfully sent metrics via remote_write")
 			}
+			select {
+			case <-ticker.C:
 
-			var elapsedTime time.Duration = 0
-			for elapsedTime < interval {
-				timer := time.NewTimer(1 * time.Second)
-				select {
-				case <-timer.C:
-					elapsedTime += time.Duration(1 * time.Second)
-				case <-quit:
-					timer.Stop()
-					slog.Info("Received stop signal, shutting down remote_write client")
-					return
-				}
+			case <-quit:
+				slog.Info("Received stop signal, shutting down remote_write client")
+				return
 			}
 		}
 	}()

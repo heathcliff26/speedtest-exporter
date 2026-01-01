@@ -12,19 +12,22 @@ github.com/davecgh/go-spew/spew
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
-# github.com/golang/snappy v1.0.0
-## explicit
-github.com/golang/snappy
 # github.com/grafana/regexp v0.0.0-20250905093917-f7b3be9d1853
 ## explicit; go 1.21
 github.com/grafana/regexp
 github.com/grafana/regexp/syntax
-# github.com/heathcliff26/promremote v1.0.20
+# github.com/heathcliff26/promremote v1.0.21
 ## explicit; go 1.24.0
 github.com/heathcliff26/promremote/promremote
-# github.com/heathcliff26/simple-fileserver v1.2.15
+# github.com/heathcliff26/simple-fileserver v1.2.16
 ## explicit; go 1.24.0
 github.com/heathcliff26/simple-fileserver/pkg/middleware
+# github.com/klauspost/compress v1.18.2
+## explicit; go 1.23
+github.com/klauspost/compress/internal/le
+github.com/klauspost/compress/internal/race
+github.com/klauspost/compress/s2
+github.com/klauspost/compress/snappy
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
@@ -51,7 +54,7 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/prometheus/prometheus v0.308.0
+# github.com/prometheus/prometheus v0.308.1
 ## explicit; go 1.24.0
 github.com/prometheus/prometheus/model/exemplar
 github.com/prometheus/prometheus/model/histogram
@@ -71,7 +74,7 @@ github.com/stretchr/testify/require
 # go.yaml.in/yaml/v2 v2.4.3
 ## explicit; go 1.15
 go.yaml.in/yaml/v2
-# golang.org/x/exp v0.0.0-20251209150349-8475f28825e9
+# golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
 ## explicit; go 1.24.0
 golang.org/x/exp/constraints
 # golang.org/x/sys v0.37.0
