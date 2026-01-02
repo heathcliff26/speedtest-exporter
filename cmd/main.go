@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/heathcliff26/promremote/promremote"
+	"github.com/heathcliff26/promremote/v2/promremote"
 	"github.com/heathcliff26/simple-fileserver/pkg/middleware"
 	"github.com/heathcliff26/speedtest-exporter/pkg/cache"
 	"github.com/heathcliff26/speedtest-exporter/pkg/collector"
@@ -97,26 +97,23 @@ func main() {
 	reg.MustRegister(collector)
 
 	if cfg.Remote.Enable {
-		rwClient, err := promremote.NewWriteClient(cfg.Remote.URL, cfg.Remote.Instance, cfg.Remote.JobName, reg)
+		opts := []promremote.ClientOption{promremote.WithInstanceLabel(cfg.Remote.Instance), promremote.WithJobLabel(cfg.Remote.JobName)}
+		if cfg.Remote.Username != "" {
+			opts = append(opts, promremote.WithBasicAuth(cfg.Remote.Username, cfg.Remote.Password))
+		}
+		rwClient, err := promremote.NewWriteClient(cfg.Remote.URL, reg, opts...)
 		if err != nil {
 			slog.Error("Failed to create remote write client", "err", err)
 			os.Exit(1)
 		}
-		if cfg.Remote.Username != "" {
-			err := rwClient.SetBasicAuth(cfg.Remote.Username, cfg.Remote.Password)
-			if err != nil {
-				slog.Error("Failed to create remote_write client", "err", err)
-				os.Exit(1)
-			}
-		}
 
 		slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
-		rwQuit := make(chan bool)
-		rwClient.Run(time.Duration(cfg.Cache), rwQuit)
-		defer func() {
-			rwQuit <- true
-			close(rwQuit)
-		}()
+		err = rwClient.Run(time.Duration(cfg.Cache))
+		if err != nil {
+			slog.Error("Failed to start remote write client", "err", err)
+			os.Exit(1)
+		}
+		defer rwClient.Stop()
 	}
 
 	server := createServer(cfg.Port, reg)
