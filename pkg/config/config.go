@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/heathcliff26/promremote/promremote"
+	"github.com/heathcliff26/promremote/v2/promremote"
 	"sigs.k8s.io/yaml"
 )
 
