@@ -65,21 +65,19 @@
 				
 				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (92.3%)</option>
 				
-				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/config/duration.go (90.9%)</option>
+				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
 				
-				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
+				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (37.5%)</option>
 				
-				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (37.5%)</option>
+				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (78.6%)</option>
 				
-				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (78.6%)</option>
+				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (65.5%)</option>
 				
-				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (65.5%)</option>
+				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (100.0%)</option>
 				
-				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (100.0%)</option>
+				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
 				
-				<option value="file11">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
-				
-				<option value="file12">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (80.0%)</option>
+				<option value="file11">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (80.0%)</option>
 				
 				</select>
 			</div>
@@ -180,7 +178,7 @@ func main() <span class="cov0" title="0">{
                 os.Exit(1)
         }</span>
 
-        <span class="cov0" title="0">resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", time.Duration(cfg.Cache))
+        <span class="cov0" title="0">resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", cfg.Cache)
 
         collector, err := collector.NewCollector(resultCache, s, cfg.Instance)
         if err != nil </span><span class="cov0" title="0">{
@@ -203,7 +201,7 @@ func main() <span class="cov0" title="0">{
                 }</span>
 
                 <span class="cov0" title="0">slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
-                err = rwClient.Run(time.Duration(cfg.Cache))
+                err = rwClient.Run(cfg.Cache)
                 if err != nil </span><span class="cov0" title="0">{
                         slog.Error("Failed to start remote write client", "err", err)
                         os.Exit(1)
@@ -484,13 +482,13 @@ import (
         "time"
 
         "github.com/heathcliff26/promremote/v2/promremote"
-        "sigs.k8s.io/yaml"
+        "go.yaml.in/yaml/v3"
 )
 
 const (
         DEFAULT_LOG_LEVEL       = "info"
         DEFAULT_PORT            = 8080
-        DEFAULT_CACHE           = Duration(5 * time.Minute)
+        DEFAULT_CACHE           = 5 * time.Minute
         DEFAULT_PERSIST_CACHE   = true
         DEFAULT_REMOTE_JOB_NAME = "speedtest-exporter"
 )
@@ -508,22 +506,22 @@ func init() <span class="cov8" title="1">{
 }</span>
 
 type Config struct {
-        LogLevel     string       `json:"logLevel,omitempty"`
-        Port         int          `json:"port,omitempty"`
-        Instance     string       `json:"instance,omitempty"`
-        Cache        Duration     `json:"cache,omitempty"`
-        PersistCache bool         `json:"persistCache,omitempty"`
-        SpeedtestCLI string       `json:"speedtestCLI,omitempty"`
-        Remote       RemoteConfig `json:"remote,omitempty"`
+        LogLevel     string        `yaml:"logLevel,omitempty"`
+        Port         int           `yaml:"port,omitempty"`
+        Instance     string        `yaml:"instance,omitempty"`
+        Cache        time.Duration `yaml:"cache,omitempty"`
+        PersistCache bool          `yaml:"persistCache,omitempty"`
+        SpeedtestCLI string        `yaml:"speedtestCLI,omitempty"`
+        Remote       RemoteConfig  `yaml:"remote,omitempty"`
 }
 
 type RemoteConfig struct {
-        Enable   bool   `json:"enable"`
-        URL      string `json:"url"`
-        Instance string `json:"instance,omitempty"`
-        JobName  string `json:"jobName,omitempty"`
-        Username string `json:"username,omitempty"`
-        Password string `json:"password,omitempty"`
+        Enable   bool   `yaml:"enable"`
+        URL      string `yaml:"url"`
+        Instance string `yaml:"instance,omitempty"`
+        JobName  string `yaml:"jobName,omitempty"`
+        Username string `yaml:"username,omitempty"`
+        Password string `yaml:"password,omitempty"`
 }
 
 // Returns a Config with default values set
@@ -615,42 +613,6 @@ func setLogLevel(level string) error <span class="cov8" title="1">{
 		
 		<pre class="file" id="file5" style="display: none">package config
 
-import (
-        "encoding/json"
-        "time"
-)
-
-// Custom wrapper around time.Duration to implement json marshalling
-type Duration time.Duration
-
-func (d *Duration) UnmarshalJSON(b []byte) error <span class="cov8" title="1">{
-        var s string
-        err := json.Unmarshal(b, &amp;s)
-        if err != nil </span><span class="cov0" title="0">{
-                return err
-        }</span>
-
-        <span class="cov8" title="1">res, err := time.ParseDuration(s)
-        if err != nil </span><span class="cov8" title="1">{
-                return err
-        }</span>
-
-        <span class="cov8" title="1">*d = Duration(res)
-
-        return nil</span>
-}
-
-func (d Duration) MarshalJSON() ([]byte, error) <span class="cov8" title="1">{
-        return json.Marshal(d.String())
-}</span>
-
-func (d Duration) String() string <span class="cov8" title="1">{
-        return time.Duration(d).String()
-}</span>
-</pre>
-		
-		<pre class="file" id="file6" style="display: none">package config
-
 import "time"
 
 type ErrUnknownLogLevel struct {
@@ -670,7 +632,7 @@ func (e *ErrInvalidInterval) Error() string <span class="cov0" title="0">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file7" style="display: none">package speedtest
+		<pre class="file" id="file6" style="display: none">package speedtest
 
 import "time"
 
@@ -697,7 +659,7 @@ func MockSpeedtestResult(timestamp int64) *SpeedtestResult <span class="cov8" ti
 }</span>
 </pre>
 		
-		<pre class="file" id="file8" style="display: none">package speedtest
+		<pre class="file" id="file7" style="display: none">package speedtest
 
 import (
         "bytes"
@@ -772,7 +734,7 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1"
 }
 </pre>
 		
-		<pre class="file" id="file9" style="display: none">package speedtest
+		<pre class="file" id="file8" style="display: none">package speedtest
 
 import (
         "log/slog"
@@ -834,7 +796,7 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">
 }
 </pre>
 		
-		<pre class="file" id="file10" style="display: none">package speedtest
+		<pre class="file" id="file9" style="display: none">package speedtest
 
 import (
         "encoding/json"
@@ -1013,7 +975,7 @@ func (r *SpeedtestResult) UnmarshalJSON(data []byte) error <span class="cov8" ti
 }
 </pre>
 		
-		<pre class="file" id="file11" style="display: none">package speedtest
+		<pre class="file" id="file10" style="display: none">package speedtest
 
 import (
         "log/slog"
@@ -1054,7 +1016,7 @@ func printSuccessMessage(res *SpeedtestResult) <span class="cov8" title="1">{
 }</span>
 </pre>
 		
-		<pre class="file" id="file12" style="display: none">package version
+		<pre class="file" id="file11" style="display: none">package version
 
 import (
         "runtime"
