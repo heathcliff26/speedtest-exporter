@@ -8,8 +8,8 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/showwin/speedtest-go v1.7.10
 	github.com/stretchr/testify v1.11.1
+	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
-	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -24,7 +24,6 @@ require (
 	github.com/prometheus/common v0.67.4 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

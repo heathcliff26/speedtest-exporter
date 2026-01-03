@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/heathcliff26/promremote/v2/promremote"
-	"sigs.k8s.io/yaml"
+	"go.yaml.in/yaml/v3"
 )
 
 const (
 	DEFAULT_LOG_LEVEL       = "info"
 	DEFAULT_PORT            = 8080
-	DEFAULT_CACHE           = Duration(5 * time.Minute)
+	DEFAULT_CACHE           = 5 * time.Minute
 	DEFAULT_PERSIST_CACHE   = true
 	DEFAULT_REMOTE_JOB_NAME = "speedtest-exporter"
 )
@@ -31,22 +31,22 @@ func init() {
 }
 
 type Config struct {
-	LogLevel     string       `json:"logLevel,omitempty"`
-	Port         int          `json:"port,omitempty"`
-	Instance     string       `json:"instance,omitempty"`
-	Cache        Duration     `json:"cache,omitempty"`
-	PersistCache bool         `json:"persistCache,omitempty"`
-	SpeedtestCLI string       `json:"speedtestCLI,omitempty"`
-	Remote       RemoteConfig `json:"remote,omitempty"`
+	LogLevel     string        `yaml:"logLevel,omitempty"`
+	Port         int           `yaml:"port,omitempty"`
+	Instance     string        `yaml:"instance,omitempty"`
+	Cache        time.Duration `yaml:"cache,omitempty"`
+	PersistCache bool          `yaml:"persistCache,omitempty"`
+	SpeedtestCLI string        `yaml:"speedtestCLI,omitempty"`
+	Remote       RemoteConfig  `yaml:"remote,omitempty"`
 }
 
 type RemoteConfig struct {
-	Enable   bool   `json:"enable"`
-	URL      string `json:"url"`
-	Instance string `json:"instance,omitempty"`
-	JobName  string `json:"jobName,omitempty"`
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	Enable   bool   `yaml:"enable"`
+	URL      string `yaml:"url"`
+	Instance string `yaml:"instance,omitempty"`
+	JobName  string `yaml:"jobName,omitempty"`
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
 }
 
 // Returns a Config with default values set

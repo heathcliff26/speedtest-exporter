@@ -16,7 +16,7 @@ func TestValidConfigs(t *testing.T) {
 		LogLevel:     "warn",
 		Port:         80,
 		Instance:     "test",
-		Cache:        Duration(time.Minute),
+		Cache:        time.Minute,
 		PersistCache: false,
 		SpeedtestCLI: "/path/to/speedtest",
 		Remote: RemoteConfig{
@@ -28,7 +28,7 @@ func TestValidConfigs(t *testing.T) {
 		LogLevel:     "debug",
 		Port:         2080,
 		Instance:     "test",
-		Cache:        Duration(30 * time.Minute),
+		Cache:        30 * time.Minute,
 		PersistCache: true,
 		Remote: RemoteConfig{
 			Enable:   true,
@@ -101,12 +101,12 @@ func TestInvalidConfig(t *testing.T) {
 		{
 			Name:  "NotYaml",
 			Path:  "testdata/not-a-config.txt",
-			Error: "*fmt.wrapError",
+			Error: "*yaml.TypeError",
 		},
 		{
 			Name:  "InvalidCache",
 			Path:  "testdata/invalid-config-1.yaml",
-			Error: "*fmt.wrapError",
+			Error: "*yaml.TypeError",
 		},
 		{
 			Name:  "MissingRemoteEndpoint",
@@ -136,7 +136,7 @@ func TestEnvSubstitution(t *testing.T) {
 	c := DefaultConfig()
 	c.LogLevel = "debug"
 	c.Port = 2080
-	c.Cache = Duration(time.Minute)
+	c.Cache = time.Minute
 	c.PersistCache = DEFAULT_PERSIST_CACHE
 	c.Remote.Instance = c.Instance
 

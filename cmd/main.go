@@ -85,7 +85,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", time.Duration(cfg.Cache))
+	resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", cfg.Cache)
 
 	collector, err := collector.NewCollector(resultCache, s, cfg.Instance)
 	if err != nil {
@@ -108,7 +108,7 @@ func main() {
 		}
 
 		slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
-		err = rwClient.Run(time.Duration(cfg.Cache))
+		err = rwClient.Run(cfg.Cache)
 		if err != nil {
 			slog.Error("Failed to start remote write client", "err", err)
 			os.Exit(1)
