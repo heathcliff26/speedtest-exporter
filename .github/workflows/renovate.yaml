@@ -20,29 +20,11 @@ on:
       - .github/renovate-bot.json5
       - .github/renovate.json5
 
-env:
-  LOG_LEVEL: debug
-  RENOVATE_DRY_RUN: false
-
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    permissions: {}
-    outputs:
-      dry-run: ${{ steps.config.outputs.dry-run }}
-      log-level: "${{ steps.config.outputs.log-level }}"
-    steps:
-      - name: Generate config from dispatch variables or defaults
-        id: config
-        run: |
-          echo "dry-run=${{ github.event.inputs.dry-run || env.RENOVATE_DRY_RUN }}" >> "$GITHUB_OUTPUT"
-          echo "log-level=${{ github.event.inputs.log-level || env.LOG_LEVEL }}" >> "$GITHUB_OUTPUT"
-
   renovate:
-    needs: prepare
     uses: heathcliff26/ci/.github/workflows/renovate.yaml@main
     permissions: {}
     with:
-      dry-run: ${{ needs.prepare.outputs.dry-run }}
-      log-level: "${{ needs.prepare.outputs.log-level }}"
+      dry-run: ${{ github.event.inputs.dry-run || false }}
+      log-level: "${{ github.event.inputs.log-level || 'debug' }}"
     secrets: inherit
