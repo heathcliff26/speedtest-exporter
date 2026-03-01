@@ -7,13 +7,13 @@ github.com/cespare/xxhash/v2
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/heathcliff26/promremote/v2 v2.0.1
+# github.com/heathcliff26/promremote/v2 v2.0.2
 ## explicit; go 1.24.0
 github.com/heathcliff26/promremote/v2/promremote
-# github.com/heathcliff26/simple-fileserver v1.2.17
+# github.com/heathcliff26/simple-fileserver v1.2.18
 ## explicit; go 1.24.0
 github.com/heathcliff26/simple-fileserver/pkg/middleware
-# github.com/klauspost/compress v1.18.2
+# github.com/klauspost/compress v1.18.4
 ## explicit; go 1.23
 github.com/klauspost/compress/internal/le
 github.com/klauspost/compress/internal/race
@@ -33,7 +33,7 @@ github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
 github.com/prometheus/client_golang/prometheus/promhttp/internal
-# github.com/prometheus/client_golang/exp v0.0.0-20251212205219-7ba246a648ca
+# github.com/prometheus/client_golang/exp v0.0.0-20260220084850-54a0d198e7b0
 ## explicit; go 1.24.0
 github.com/prometheus/client_golang/exp/api/remote
 github.com/prometheus/client_golang/exp/api/remote/genproto/v2
@@ -42,7 +42,7 @@ github.com/prometheus/client_golang/exp/internal/github.com/planetscale/vtprotob
 # github.com/prometheus/client_model v0.6.2
 ## explicit; go 1.22.0
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.67.4
+# github.com/prometheus/common v0.67.5
 ## explicit; go 1.24.0
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/model
@@ -67,14 +67,14 @@ go.yaml.in/yaml/v2
 # go.yaml.in/yaml/v3 v3.0.4
 ## explicit; go 1.16
 go.yaml.in/yaml/v3
-# golang.org/x/exp v0.0.0-20260112195511-716be5621a96
-## explicit; go 1.24.0
+# golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa
+## explicit; go 1.25.0
 golang.org/x/exp/constraints
-# golang.org/x/sys v0.37.0
+# golang.org/x/sys v0.39.0
 ## explicit; go 1.24.0
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# google.golang.org/protobuf v1.36.10
+# google.golang.org/protobuf v1.36.11
 ## explicit; go 1.23
 google.golang.org/protobuf/encoding/protodelim
 google.golang.org/protobuf/encoding/prototext
