@@ -10,7 +10,7 @@ github.com/davecgh/go-spew/spew
 # github.com/heathcliff26/promremote/v2 v2.0.2
 ## explicit; go 1.24.0
 github.com/heathcliff26/promremote/v2/promremote
-# github.com/heathcliff26/simple-fileserver v1.2.18
+# github.com/heathcliff26/simple-fileserver v1.3.0
 ## explicit; go 1.24.0
 github.com/heathcliff26/simple-fileserver/pkg/middleware
 # github.com/klauspost/compress v1.18.4
@@ -67,7 +67,7 @@ go.yaml.in/yaml/v2
 # go.yaml.in/yaml/v3 v3.0.4
 ## explicit; go 1.16
 go.yaml.in/yaml/v3
-# golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa
+# golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90
 ## explicit; go 1.25.0
 golang.org/x/exp/constraints
 # golang.org/x/sys v0.39.0
