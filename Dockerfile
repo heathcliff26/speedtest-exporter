@@ -29,7 +29,7 @@ VOLUME /cache
 
 EXPOSE 8080
 
-USER 1001
+USER nobody:nobody
 
 ENTRYPOINT ["/speedtest-exporter"]
 

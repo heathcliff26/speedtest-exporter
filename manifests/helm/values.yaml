@@ -62,7 +62,7 @@ podLabels: {}
 
 # This is for setting the pod security context.
 podSecurityContext:
-  fsGroup: 1001
+  fsGroup: 65534
 
 # This is for setting the container security context.
 securityContext: {}
@@ -71,7 +71,7 @@ securityContext: {}
   #   - ALL
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
-  # runAsUser: 1000
+  # runAsUser: 65534
 
 # This is for setting up a service.
 service:
