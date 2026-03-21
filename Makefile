@@ -2,20 +2,15 @@ SHELL := bash
 
 REPOSITORY ?= localhost
 CONTAINER_NAME ?= speedtest-exporter
-SLIM_TAG ?= slim
-CLI_TAG ?= cli
+TAG ?= latest
 
 # Build the binary
 build:
 	hack/build.sh
 
-# Build the slim container image
-image-slim:
-	podman build -t $(REPOSITORY)/$(CONTAINER_NAME):$(SLIM_TAG) .
-
-# Build the CLI container image
-image-cli:
-	podman build -f Dockerfile.cli -t $(REPOSITORY)/$(CONTAINER_NAME):$(CLI_TAG) .
+# Build the container image
+image:
+	podman build -t $(REPOSITORY)/$(CONTAINER_NAME):$(TAG) .
 
 # Run unit tests
 test:
@@ -64,8 +59,7 @@ help:
 .PHONY: \
 	default \
 	build \
-	image-slim \
-	image-cli \
+	image \
 	test \
 	coverprofile \
 	lint \
