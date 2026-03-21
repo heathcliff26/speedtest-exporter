@@ -4,12 +4,12 @@ go 1.25.0
 
 require (
 	github.com/heathcliff26/promremote/v2 v2.0.2
-	github.com/heathcliff26/simple-fileserver v1.2.18
+	github.com/heathcliff26/simple-fileserver v1.3.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/showwin/speedtest-go v1.7.10
 	github.com/stretchr/testify v1.11.1
 	go.yaml.in/yaml/v3 v3.0.4
-	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa
+	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90
 )
 
 require (
