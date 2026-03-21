@@ -43,24 +43,23 @@ One important functionality is that this projects implements prometheus remote_w
 
 There are different flavors of the image:
 
-| Tag(s)     | Description                                                                                                                 |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **latest** | Last released slim version of the image.                                                                                    |
-| **slim**   | Contains only the speedtest-exporter binary and uses native golang implementation.                                          |
-| **cli**    | Alpine based container that also contains the speedtest.net cli client binary. Uses the speedtest.net cli to run the tests. |
-| **vX.Y.Z** | Released version of the image.                                                                                              |
+| Tag(s)      | Description                                                     |
+| ----------- | --------------------------------------------------------------- |
+| **latest**  | Last released version of the image.                             |
+| **rolling** | Rolling update of the image, always built from the main branch. |
+| **vX.Y.Z**  | Released version of the image.                                  |
 
 ## Usage
 
 To run the image with default settings simply use:
 ```
-podman run -d -p 8080:8080 ghcr.io/heathcliff26/speedtest-exporter:slim
+podman run -d -p 8080:8080 ghcr.io/heathcliff26/speedtest-exporter:latest
 ```
 You can then view your metrics under `http://localhost:8080/metrics`.
 
 By default the last result will be cached to disk. To persist this between container runs, mount a volume at `/cache`:
 ```
-podman run -d -p 8080:8080 -v speedtest-cache:/cache ghcr.io/heathcliff26/speedtest-exporter:slim
+podman run -d -p 8080:8080 -v speedtest-cache:/cache ghcr.io/heathcliff26/speedtest-exporter:latest
 ```
 
 ### Kubernetes

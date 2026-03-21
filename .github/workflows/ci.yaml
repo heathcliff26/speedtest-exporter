@@ -27,7 +27,6 @@ on:
       - "*.go"
       - "**/*.go"
       - "Dockerfile"
-      - "Dockerfile.cli"
   pull_request:
     branches: ["main"]
   merge_group:
@@ -60,7 +59,7 @@ jobs:
       cache: false
       cmd: "make validate"
 
-  build-slim:
+  build-image:
     uses: heathcliff26/ci/.github/workflows/build-container.yaml@main
     needs:
       - lint
@@ -71,24 +70,8 @@ jobs:
       packages: write
     with:
       dockerfile: Dockerfile
-      tag: "${{ inputs.tag == 'rolling' && 'slim' || inputs.tag == '' && 'slim' || inputs.tag }}"
+      tag: "${{ inputs.tag == '' && 'rolling' || inputs.tag }}"
       tags: "${{ inputs.latest == true && 'type=raw,value=latest' || '' }}"
-      dry-run: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.dry-run == 'true' }}
-    secrets: inherit
-
-  build-cli:
-    uses: heathcliff26/ci/.github/workflows/build-container.yaml@main
-    needs:
-      - lint
-      - unit-tests
-      - validate
-    permissions:
-      contents: read
-      packages: write
-    with:
-      dockerfile: Dockerfile.cli
-      tag: "${{ inputs.tag == 'rolling' && 'cli' || inputs.tag == '' && 'cli' || inputs.tag }}${{ inputs.tag != 'rolling' && inputs.tag != '' && '-cli' || '' }}"
-      tags: ""
       dry-run: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.dry-run == 'true' }}
     secrets: inherit
 
