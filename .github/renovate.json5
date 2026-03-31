@@ -12,8 +12,7 @@
     "github>heathcliff26/ci//renovate/customManagers.json5",
     "github>heathcliff26/ci//renovate/group-gomod.json5",
     "github>heathcliff26/ci//renovate/labels.json5",
-    "github>heathcliff26/ci//renovate/semanticCommits.json5",
-    "helpers:pinGitHubActionDigests"
+    "github>heathcliff26/ci//renovate/semanticCommits.json5"
   ],
   "assigneesFromCodeOwners": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
