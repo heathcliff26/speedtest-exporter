@@ -123,6 +123,54 @@ ingress:
   #    hosts:
   #      - speedtest-exporter.example.org
 
+# -- Expose the service via gateway-api HTTPRoute
+# Requires Gateway API resources and suitable controller installed within the cluster
+# (see: https://gateway-api.sigs.k8s.io/guides/)
+httpRoute:
+  # HTTPRoute enabled.
+  enabled: false
+  # HTTPRoute annotations.
+  annotations: {}
+  # Which Gateways/ListenerSet this Route is attached to.
+  parentRefs: []
+  # Hostnames matching HTTP header.
+  hostnames: []
+  # List of rules and filters applied.
+  rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /
+  #     headers:
+  #     - name: version
+  #       value: v2
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       set:
+  #       - name: My-Overwrite-Header
+  #         value: this-is-the-only-value
+  #       remove:
+  #       - User-Agent
+
+# -- Optionally create a listener set for self-service ssl certificates
+# Requires Gateway API resources v1.5+ and suitable controller installed within the cluster
+# (see: https://gateway-api.sigs.k8s.io/guides/)
+listenerSet:
+  # ListenerSet enabled.
+  enabled: false
+  # ListenerSet annotations.
+  annotations: {}
+  # Which Gateway this ListenerSet is attached to.
+  parentRef:
+    name: ""
+    namespace: ""
+  # List of listeners
+  listeners: []
+    # - name: speedtest-exporter
+    #   hostname: speedtest-exporter.example.org
+    #   port: 80
+    #   protocol: HTTP
 
 # This is to set up resource requests and limits.
 resources:
