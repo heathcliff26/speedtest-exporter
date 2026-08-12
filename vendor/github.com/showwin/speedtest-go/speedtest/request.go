@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/showwin/speedtest-go/speedtest/transport"
 	"io"
 	"math"
 	"net/http"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"github.com/showwin/speedtest-go/speedtest/transport"
 )
 
 type (
@@ -179,7 +180,7 @@ func downloadRequest(ctx context.Context, s *Server, w int) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	return s.Context.NewChunk().DownloadHandler(resp.Body)
 }
 
@@ -198,9 +199,16 @@ func uploadRequest(ctx context.Context, s *Server, w int) error {
 	if err != nil {
 		return err
 	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	defer resp.Body.Close()
-	return err
+	defer func() { _ = resp.Body.Close() }()
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		return err
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("upload request failed: %s", resp.Status)
+	}
+	// Treat a successful upload.php response as application-level upload confirmation.
+	s.Context.AddTotalUpload(chunkSize)
+	return nil
 }
 
 // PingTest executes test to measure latency
@@ -212,11 +220,12 @@ func (s *Server) PingTest(callback func(latency time.Duration)) error {
 func (s *Server) PingTestContext(ctx context.Context, callback func(latency time.Duration)) (err error) {
 	start := time.Now()
 	var vectorPingResult []int64
-	if s.Context.config.PingMode == TCP {
+	switch s.Context.config.PingMode {
+	case TCP:
 		vectorPingResult, err = s.TCPPing(ctx, 10, time.Millisecond*200, callback)
-	} else if s.Context.config.PingMode == ICMP {
+	case ICMP:
 		vectorPingResult, err = s.ICMPPing(ctx, time.Second*4, 10, time.Millisecond*200, callback)
-	} else {
+	default:
 		vectorPingResult, err = s.HTTPPing(ctx, 10, time.Millisecond*200, callback)
 	}
 	if err != nil || len(vectorPingResult) == 0 {
@@ -369,7 +378,7 @@ func (s *Server) ICMPPing(
 	if err != nil {
 		return nil, err
 	}
-	defer dialContext.Close()
+	defer func() { _ = dialContext.Close() }()
 
 	ICMPData := make([]byte, 8+echoOptionDataSize) // header + data
 	ICMPData[0] = 8                                // echo

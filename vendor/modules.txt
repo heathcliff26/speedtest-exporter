@@ -7,13 +7,13 @@ github.com/cespare/xxhash/v2
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/heathcliff26/promremote/v2 v2.0.4
+# github.com/heathcliff26/promremote/v2 v2.0.5
 ## explicit; go 1.25.0
 github.com/heathcliff26/promremote/v2/promremote
 # github.com/heathcliff26/simple-fileserver v1.3.3
 ## explicit; go 1.25.0
 github.com/heathcliff26/simple-fileserver/pkg/middleware
-# github.com/klauspost/compress v1.18.6
+# github.com/klauspost/compress v1.19.1
 ## explicit; go 1.24
 github.com/klauspost/compress/internal/le
 github.com/klauspost/compress/internal/race
@@ -25,15 +25,15 @@ github.com/munnerz/goautoneg
 # github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/prometheus/client_golang v1.23.2
-## explicit; go 1.23.0
+# github.com/prometheus/client_golang v1.24.1
+## explicit; go 1.25.0
 github.com/prometheus/client_golang/internal/github.com/golang/gddo/httputil
 github.com/prometheus/client_golang/internal/github.com/golang/gddo/httputil/header
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
 github.com/prometheus/client_golang/prometheus/promhttp/internal
-# github.com/prometheus/client_golang/exp v0.0.0-20260602051030-3537b20ac86b
+# github.com/prometheus/client_golang/exp v0.0.0-20260810122141-0b4876a6a1bd
 ## explicit; go 1.25.0
 github.com/prometheus/client_golang/exp/api/remote
 github.com/prometheus/client_golang/exp/api/remote/genproto/v2
@@ -42,16 +42,16 @@ github.com/prometheus/client_golang/exp/internal/github.com/planetscale/vtprotob
 # github.com/prometheus/client_model v0.6.2
 ## explicit; go 1.22.0
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.68.0
+# github.com/prometheus/common v0.70.1
 ## explicit; go 1.25.0
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/model
-# github.com/prometheus/procfs v0.16.1
-## explicit; go 1.23.0
+# github.com/prometheus/procfs v0.21.1
+## explicit; go 1.25.0
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/showwin/speedtest-go v1.7.10
+# github.com/showwin/speedtest-go v1.7.11
 ## explicit; go 1.19
 github.com/showwin/speedtest-go/speedtest
 github.com/showwin/speedtest-go/speedtest/internal
@@ -61,13 +61,13 @@ github.com/showwin/speedtest-go/speedtest/transport
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/assert/yaml
 github.com/stretchr/testify/require
-# go.yaml.in/yaml/v3 v3.0.4
+# go.yaml.in/yaml/v3 v3.0.5
 ## explicit; go 1.16
 go.yaml.in/yaml/v3
-# golang.org/x/exp v0.0.0-20260709172345-9ea1abe57597
+# golang.org/x/exp v0.0.0-20260812173653-3d80eb74bc5b
 ## explicit; go 1.25.0
 golang.org/x/exp/constraints
-# golang.org/x/sys v0.42.0
+# golang.org/x/sys v0.47.0
 ## explicit; go 1.25.0
 golang.org/x/sys/unix
 golang.org/x/sys/windows

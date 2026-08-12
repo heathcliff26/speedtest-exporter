@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/showwin/speedtest-go/speedtest/transport"
 	"math"
 	"net/http"
 	"net/url"
@@ -15,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/showwin/speedtest-go/speedtest/transport"
 )
 
 const (
@@ -52,6 +53,7 @@ type Server struct {
 	DLSpeed      ByteRate        `json:"dl_speed"`
 	ULSpeed      ByteRate        `json:"ul_speed"`
 	TestDuration TestDuration    `json:"test_duration"`
+	CC           string          `json:"cc"`
 	PacketLoss   transport.PLoss `json:"packet_loss"`
 
 	Context *Speedtest `json:"-"`
@@ -77,7 +79,8 @@ func (s *Speedtest) CustomServer(host string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	parseHost := fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, "/speedtest/upload.php")
+	u.Path = "/speedtest/upload.php"
+	parseHost := u.String()
 	return &Server{
 		ID:      "Custom",
 		Lat:     "?",
@@ -133,6 +136,33 @@ func (servers Servers) Swap(i, j int) {
 	servers[i], servers[j] = servers[j], servers[i]
 }
 
+// Filter filter by filterFunc
+func (servers Servers) Filter(filterFunc func(server *Server) bool) Servers {
+	var retServers Servers
+	for i := range servers {
+		if filterFunc(servers[i]) {
+			retServers = append(retServers, servers[i])
+		}
+	}
+	return retServers
+}
+
+// CC filter by Country Code
+func (servers Servers) CC(cc []string) Servers {
+	var upperCC []string
+	for i := range cc {
+		upperCC = append(upperCC, strings.ToUpper(cc[i]))
+	}
+	return servers.Filter(func(server *Server) bool {
+		for _, code := range upperCC {
+			if code == server.CC {
+				return true
+			}
+		}
+		return false
+	})
+}
+
 // Hosts return hosts of servers
 func (servers Servers) Hosts() []string {
 	var retServer []string
@@ -174,7 +204,7 @@ func (s *Speedtest) FetchServerByIDContext(ctx context.Context, serverID string)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	var list ServerList
 	decoder := xml.NewDecoder(resp.Body)
 	if err = decoder.Decode(&list); err != nil {
@@ -221,6 +251,7 @@ func (s *Speedtest) FetchServerListContext(ctx context.Context) (Servers, error)
 		query.Set("lat", strconv.FormatFloat(s.config.Location.Lat, 'f', -1, 64))
 		query.Set("lon", strconv.FormatFloat(s.config.Location.Lon, 'f', -1, 64))
 	}
+
 	u.RawQuery = query.Encode()
 	dbg.Printf("Retrieving servers: %s\n", u.String())
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
@@ -251,7 +282,7 @@ func (s *Speedtest) FetchServerListContext(ctx context.Context) (Servers, error)
 		_payloadType = typeXMLPayload
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var servers Servers
 
@@ -292,11 +323,12 @@ func (s *Speedtest) FetchServerListContext(ctx context.Context) (Servers, error)
 		go func(gs *Server) {
 			var latency []int64
 			var errPing error
-			if s.config.PingMode == TCP {
+			switch s.config.PingMode {
+			case TCP:
 				latency, errPing = gs.TCPPing(pCtx, 1, time.Millisecond, nil)
-			} else if s.config.PingMode == ICMP {
+			case ICMP:
 				latency, errPing = gs.ICMPPing(pCtx, 4*time.Second, 1, time.Millisecond, nil)
-			} else {
+			default:
 				latency, errPing = gs.HTTPPing(pCtx, 1, time.Millisecond, nil)
 			}
 			if errPing != nil || len(latency) < 1 {

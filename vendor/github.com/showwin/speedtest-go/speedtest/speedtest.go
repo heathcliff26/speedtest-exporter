@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	version          = "1.7.10"
+	version          = "1.7.11"
 	DefaultUserAgent = fmt.Sprintf("showwin/speedtest-go %s", version)
 )
 
@@ -98,6 +98,15 @@ func (s *Speedtest) NewUserConfig(uc *UserConfig) {
 	}
 	if len(uc.Source) > 0 {
 		_, address := parseAddr(uc.Source)
+
+		// Try as interface name first (Linux: SO_BINDTODEVICE)
+		if ifIP, ctrl, ok := resolveInterface(address); ok {
+			address = ifIP.String()
+			if uc.DialerControl == nil {
+				uc.DialerControl = ctrl
+			}
+		}
+
 		addr0, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("[%s]:0", address)) // dynamic tcp port
 		if err == nil {
 			tcpSource = addr0
