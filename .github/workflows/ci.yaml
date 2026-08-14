@@ -19,6 +19,23 @@ on:
         type: boolean
         default: false
         required: false
+  workflow_call:
+    inputs:
+      tag:
+        description: "Use to set tag, default: rolling"
+        type: string
+        default: "rolling"
+        required: false
+      dry-run:
+        description: "Do not push image"
+        type: boolean
+        default: false
+        required: false
+      latest:
+        description: "Tag latest"
+        type: boolean
+        default: false
+        required: false
   push:
     branches: ["main"]
     paths:
@@ -72,20 +89,5 @@ jobs:
       dockerfile: Dockerfile
       tag: "${{ inputs.tag == '' && 'rolling' || inputs.tag }}"
       tags: "${{ inputs.latest == true && 'type=raw,value=latest' || '' }}"
-      dry-run: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.dry-run == 'true' }}
-    secrets: inherit
-
-  push-helm:
-    uses: heathcliff26/ci/.github/workflows/push-helm-chart.yaml@main
-    if: ${{ inputs.tag != '' && inputs.tag != 'rolling' }}
-    permissions:
-      contents: read
-      packages: write
-    needs:
-      - lint
-      - unit-tests
-      - validate
-    with:
-      tag: "${{ inputs.tag }}"
       dry-run: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || inputs.dry-run == 'true' }}
     secrets: inherit
