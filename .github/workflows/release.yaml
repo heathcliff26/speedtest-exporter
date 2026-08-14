@@ -1,0 +1,74 @@
+---
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      draft:
+        description: "Create draft release"
+        type: boolean
+        default: false
+      update:
+        description: "Update existing release"
+        type: boolean
+        default: false
+      tag:
+        description: "Release tag to use"
+        type: string
+        required: true
+      latest:
+        description: "Tag container as latest"
+        type: boolean
+        default: true
+      prerelease:
+        description: "Mark the release as a prerelease"
+        type: boolean
+        default: false
+
+jobs:
+  tag:
+    uses: heathcliff26/ci/.github/workflows/tag.yaml@main
+    permissions:
+      contents: write
+    with:
+      tag: ${{ inputs.tag }}
+      overwrite: ${{ inputs.update }}
+    secrets: inherit
+
+  build:
+    uses: ./.github/workflows/ci.yaml
+    needs:
+      - tag
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    with:
+      tag: ${{ inputs.tag }}
+      latest: ${{ inputs.latest }}
+    secrets: inherit
+
+  push-helm:
+    uses: heathcliff26/ci/.github/workflows/push-helm-chart.yaml@main
+    permissions:
+      contents: read
+      packages: write
+    needs:
+      - build
+    with:
+      tag: "${{ inputs.tag }}"
+    secrets: inherit
+
+  release:
+    uses: heathcliff26/ci/.github/workflows/release.yaml@main
+    needs:
+      - push-helm
+    permissions:
+      contents: write
+    with:
+      draft: ${{ inputs.draft }}
+      update: ${{ inputs.update }}
+      tag: ${{ inputs.tag }}
+      release-artifacts: ""
+      prerelease: ${{ inputs.prerelease }}
+    secrets: inherit
