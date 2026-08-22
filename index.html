@@ -57,27 +57,27 @@
 				
 				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (25.0%)</option>
 				
-				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (93.1%)</option>
+				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (94.5%)</option>
 				
 				<option value="file2">github.com/heathcliff26/speedtest-exporter/pkg/collector/collector.go (100.0%)</option>
 				
 				<option value="file3">github.com/heathcliff26/speedtest-exporter/pkg/collector/errors.go (0.0%)</option>
 				
-				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (92.3%)</option>
+				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (93.3%)</option>
 				
 				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
 				
 				<option value="file6">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/mock-speedtest.go (37.5%)</option>
 				
-				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (78.6%)</option>
+				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (88.7%)</option>
 				
-				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (65.5%)</option>
+				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (82.8%)</option>
 				
 				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (100.0%)</option>
 				
 				<option value="file10">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/util.go (100.0%)</option>
 				
-				<option value="file11">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (80.0%)</option>
+				<option value="file11">github.com/heathcliff26/speedtest-exporter/pkg/version/version.go (85.0%)</option>
 				
 				</select>
 			</div>
@@ -121,102 +121,102 @@ var (
 )
 
 // Initialize the logger
-func init() <span class="cov8" title="1">{
-        flag.StringVar(&amp;configPath, "config", "", "Optional: Path to config file")
+func init() {
+        <span class="cov8" title="1">flag.StringVar(&amp;configPath, "config", "", "Optional: Path to config file")
         flag.BoolVar(&amp;env, "env", false, "Used together with -config, when set will expand enviroment variables in config")
         flag.BoolVar(&amp;showVersion, "version", false, "Show the version information and exit")
-}</span>
+</span>}
 
 // Handle requests to the webroot.
 // Serves static, human-readable HTML that provides a link to /metrics
-func ServerRootHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
-        fmt.Fprint(w, "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome to speedtest-exporter&lt;/h1&gt;Click &lt;a href='/metrics'&gt;here&lt;/a&gt; to see metrics.&lt;/body&gt;&lt;/html&gt;")
-}</span>
+func ServerRootHandler(w http.ResponseWriter, r *http.Request) {
+        <span class="cov8" title="1">fmt.Fprint(w, "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome to speedtest-exporter&lt;/h1&gt;Click &lt;a href='/metrics'&gt;here&lt;/a&gt; to see metrics.&lt;/body&gt;&lt;/html&gt;")
+</span>}
 
-func createSpeedtest(path string) (speedtest.Speedtest, error) <span class="cov8" title="1">{
-        if path == "" </span><span class="cov8" title="1">{
-                slog.Debug("Using go-native speedtest implementation")
+func createSpeedtest(path string) (speedtest.Speedtest, error) {
+        <span class="cov8" title="1">if path == "" </span>{
+                <span class="cov8" title="1">slog.Debug("Using go-native speedtest implementation")
                 return speedtest.NewSpeedtest(), nil
-        }</span> else<span class="cov8" title="1"> {
-                slog.Debug("Using external speedtest-cli binary", "path", path)
+</span>        } else {
+                <span class="cov8" title="1">slog.Debug("Using external speedtest-cli binary", "path", path)
                 return speedtest.NewSpeedtestCLI(path)
-        }</span>
+</span>        }
 }
 
-func createServer(port int, reg *prometheus.Registry) *http.Server <span class="cov8" title="1">{
-        router := http.NewServeMux()
+func createServer(port int, reg *prometheus.Registry) *http.Server {
+        <span class="cov8" title="1">router := http.NewServeMux()
         router.HandleFunc("/", ServerRootHandler)
         router.Handle("/metrics", middleware.Logging(promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg})))
-
-        return &amp;http.Server{
+</span>
+        <span class="cov8" title="1">return &amp;http.Server{
                 Addr:        ":" + strconv.Itoa(port),
                 Handler:     router,
                 ReadTimeout: 10 * time.Second,
                 // The speedtest takes roughly 22-24 seconds on average.
                 // Ensure timeout has some buffer for a worst case.
                 WriteTimeout: 60 * time.Second,
-        }
-}</span>
+</span>        }
+}
 
-func main() <span class="cov0" title="0">{
-        flag.Parse()
-
-        if showVersion </span><span class="cov0" title="0">{
-                fmt.Print(version.Version())
+func main() {
+        <span class="cov0" title="0">flag.Parse()
+</span>
+        <span class="cov0" title="0">if showVersion </span>{
+                <span class="cov0" title="0">fmt.Print(version.Version())
                 os.Exit(0)
-        }</span>
+</span>        }
 
         <span class="cov0" title="0">cfg, err := config.LoadConfig(configPath, env)
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Could not load configuration", slog.String("path", configPath), slog.String("err", err.Error()))
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Could not load configuration", slog.String("path", configPath), slog.String("err", err.Error()))
                 os.Exit(1)
-        }</span>
+</span>        }
 
         <span class="cov0" title="0">s, err := createSpeedtest(cfg.SpeedtestCLI)
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Failed initialize speedtest", "err", err)
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Failed initialize speedtest", "err", err)
                 os.Exit(1)
-        }</span>
+</span>        }
 
         <span class="cov0" title="0">resultCache := cache.NewCache(cfg.PersistCache, "/cache/speedtest-result.json", cfg.Cache)
-
-        collector, err := collector.NewCollector(resultCache, s, cfg.Instance)
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Failed to create collector", "err", err)
+</span>
+        <span class="cov0" title="0">collector, err := collector.NewCollector(resultCache, s, cfg.Instance)
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Failed to create collector", "err", err)
                 os.Exit(1)
-        }</span>
+</span>        }
 
         <span class="cov0" title="0">reg := prometheus.NewRegistry()
         reg.MustRegister(collector)
-
-        if cfg.Remote.Enable </span><span class="cov0" title="0">{
-                opts := []promremote.ClientOption{promremote.WithInstanceLabel(cfg.Remote.Instance), promremote.WithJobLabel(cfg.Remote.JobName)}
-                if cfg.Remote.Username != "" </span><span class="cov0" title="0">{
-                        opts = append(opts, promremote.WithBasicAuth(cfg.Remote.Username, cfg.Remote.Password))
-                }</span>
+</span>
+        <span class="cov0" title="0">if cfg.Remote.Enable </span>{
+                <span class="cov0" title="0">opts := []promremote.ClientOption{promremote.WithInstanceLabel(cfg.Remote.Instance), promremote.WithJobLabel(cfg.Remote.JobName)}
+                if cfg.Remote.Username != "" </span>{
+                        <span class="cov0" title="0">opts = append(opts, promremote.WithBasicAuth(cfg.Remote.Username, cfg.Remote.Password))
+</span>                }
                 <span class="cov0" title="0">rwClient, err := promremote.NewWriteClient(cfg.Remote.URL, reg, opts...)
-                if err != nil </span><span class="cov0" title="0">{
-                        slog.Error("Failed to create remote write client", "err", err)
+                if err != nil </span>{
+                        <span class="cov0" title="0">slog.Error("Failed to create remote write client", "err", err)
                         os.Exit(1)
-                }</span>
+</span>                }
 
                 <span class="cov0" title="0">slog.Info("Starting remote_write client", slog.String("interval", cfg.Cache.String()))
                 err = rwClient.Run(cfg.Cache)
-                if err != nil </span><span class="cov0" title="0">{
-                        slog.Error("Failed to start remote write client", "err", err)
+                if err != nil </span>{
+                        <span class="cov0" title="0">slog.Error("Failed to start remote write client", "err", err)
                         os.Exit(1)
-                }</span>
+</span>                }
                 <span class="cov0" title="0">defer rwClient.Stop()</span>
         }
 
         <span class="cov0" title="0">server := createServer(cfg.Port, reg)
-
-        slog.Info("Starting http server", slog.String("addr", server.Addr))
+</span>
+        <span class="cov0" title="0">slog.Info("Starting http server", slog.String("addr", server.Addr))
         err = server.ListenAndServe()
-        if err != nil &amp;&amp; !errors.Is(err, http.ErrServerClosed) </span><span class="cov0" title="0">{
-                slog.Error("Failed to start http server", "err", err)
+        if err != nil &amp;&amp; !errors.Is(err, http.ErrServerClosed) </span>{
+                <span class="cov0" title="0">slog.Error("Failed to start http server", "err", err)
                 os.Exit(1)
-        }</span>
+</span>        }
 }
 </pre>
 		
@@ -251,63 +251,63 @@ type Cache struct {
 // Create a new Cache instance and try to initialize it from disk if persist is true.
 // If the path is not writable, the cache will not persist to disk.
 // This function does not fail if it cannot read from disk, it will just log the error.
-func NewCache(persist bool, path string, cacheTime time.Duration) *Cache <span class="cov8" title="1">{
-        cache := &amp;Cache{
+func NewCache(persist bool, path string, cacheTime time.Duration) *Cache {
+        <span class="cov8" title="1">cache := &amp;Cache{
                 persist:   persist,
                 path:      path,
                 cacheTime: cacheTime,
-        }
+</span>        }
 
-        if path == "" </span><span class="cov8" title="1">{
-                cache.persist = false
-        }</span>
-        <span class="cov8" title="1">if !cache.persist </span><span class="cov8" title="1">{
-                return cache
-        }</span>
+        <span class="cov8" title="1">if path == "" </span>{
+                <span class="cov8" title="1">cache.persist = false
+</span>        }
+        <span class="cov8" title="1">if !cache.persist </span>{
+                <span class="cov8" title="1">return cache
+</span>        }
 
         // #nosec G302: Cache does not contain sensitive data, can be world readable
         <span class="cov8" title="1">f, err := os.OpenFile(cache.path, os.O_CREATE|os.O_RDWR, 0644)
-        if err != nil </span><span class="cov8" title="1">{
-                slog.Info("Failed to open cache file, will not persist cache to disk", slog.String("file", cache.path), slog.Any("error", err))
+        if err != nil </span>{
+                <span class="cov8" title="1">slog.Info("Failed to open cache file, will not persist cache to disk", slog.String("file", cache.path), slog.Any("error", err))
                 cache.persist = false
                 return cache
-        }</span>
+</span>        }
         <span class="cov8" title="1">defer f.Close()
-
-        data, err := io.ReadAll(f)
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Info("Could not initialize cache from disk", slog.String("file", cache.path), slog.Any("error", err))
+</span>
+        <span class="cov8" title="1">data, err := io.ReadAll(f)
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Info("Could not initialize cache from disk", slog.String("file", cache.path), slog.Any("error", err))
                 return cache
-        }</span>
+</span>        }
 
-        <span class="cov8" title="1">if len(data) == 0 </span><span class="cov8" title="1">{
-                slog.Info("Cache file is empty, starting with empty cache", slog.String("file", cache.path))
+        <span class="cov8" title="1">if len(data) == 0 </span>{
+                <span class="cov8" title="1">slog.Info("Cache file is empty, starting with empty cache", slog.String("file", cache.path))
                 return cache
-        }</span>
+</span>        }
 
         <span class="cov8" title="1">cachedResult := &amp;speedtest.SpeedtestResult{}
         err = cachedResult.UnmarshalJSON(data)
-        if err != nil </span><span class="cov8" title="1">{
-                slog.Info("Could not unmarshal cache data from disk", slog.String("file", cache.path), slog.Any("error", err))
-        }</span> else<span class="cov8" title="1"> {
-                slog.Info("Initialized cache from disk", slog.String("path", cache.path))
+        if err != nil </span>{
+                <span class="cov8" title="1">slog.Info("Could not unmarshal cache data from disk", slog.String("file", cache.path), slog.Any("error", err))
+</span>        } else {
+                <span class="cov8" title="1">slog.Info("Initialized cache from disk", slog.String("path", cache.path))
                 cache.cachedResult = cachedResult
-        }</span>
+</span>        }
         <span class="cov8" title="1">return cache</span>
 }
 
 // Return the currently cached result and whether it is still valid.
 // This method is safe to call even if the Cache instance is nil.
-func (c *Cache) Read() (result *speedtest.SpeedtestResult, valid bool) <span class="cov8" title="1">{
-        if c == nil </span><span class="cov8" title="1">{
-                return nil, false
-        }</span>
+func (c *Cache) Read() (result *speedtest.SpeedtestResult, valid bool) {
+        <span class="cov8" title="1">if c == nil </span>{
+                <span class="cov8" title="1">return nil, false
+</span>        }
         <span class="cov8" title="1">c.RLock()
         defer c.RUnlock()
-
-        if c.cachedResult == nil </span><span class="cov8" title="1">{
-                return nil, false
-        }</span>
+</span>
+        <span class="cov8" title="1">if c.cachedResult == nil </span>{
+                <span class="cov8" title="1">return nil, false
+</span>        }
 
         <span class="cov8" title="1">return c.cachedResult, c.expiresAt().After(time.Now())</span>
 }
@@ -315,41 +315,41 @@ func (c *Cache) Read() (result *speedtest.SpeedtestResult, valid bool) <span cla
 // Save the given result to the cache.
 // Attempt to persist to disk if enabled, but do not fail if it fails.
 // This method is safe to call even if the Cache instance is nil.
-func (c *Cache) Save(result *speedtest.SpeedtestResult) <span class="cov8" title="1">{
-        if c == nil </span><span class="cov8" title="1">{
-                return
-        }</span>
+func (c *Cache) Save(result *speedtest.SpeedtestResult) {
+        <span class="cov8" title="1">if c == nil </span>{
+                <span class="cov8" title="1">return
+</span>        }
         <span class="cov8" title="1">c.Lock()
         defer c.Unlock()
-
-        c.cachedResult = result
-        if !c.persist </span><span class="cov8" title="1">{
-                return
-        }</span>
+</span>
+        <span class="cov8" title="1">c.cachedResult = result
+        if !c.persist </span>{
+                <span class="cov8" title="1">return
+</span>        }
 
         <span class="cov8" title="1">data, err := result.MarshalJSON()
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Could not marshal result to JSON", slog.Any("error", err))
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Could not marshal result to JSON", slog.Any("error", err))
                 return
-        }</span>
+</span>        }
         // #nosec G306: Cache does not contain sensitive data, can be world readable
         <span class="cov8" title="1">err = os.WriteFile(c.path, data, 0644)
-        if err != nil </span><span class="cov8" title="1">{
-                slog.Error("Could not write cache to disk", slog.String("file", c.path), slog.Any("error", err))
-        }</span>
+        if err != nil </span>{
+                <span class="cov8" title="1">slog.Error("Could not write cache to disk", slog.String("file", c.path), slog.Any("error", err))
+</span>        }
 }
 
 // Return when the cache will expire
-func (c *Cache) ExpiresAt() time.Time <span class="cov8" title="1">{
-        if c == nil </span><span class="cov8" title="1">{
-                return time.Time{}
-        }</span>
+func (c *Cache) ExpiresAt() time.Time {
+        <span class="cov8" title="1">if c == nil </span>{
+                <span class="cov8" title="1">return time.Time{}
+</span>        }
         <span class="cov8" title="1">c.RLock()
         defer c.RUnlock()
-
-        if c.cachedResult == nil </span><span class="cov8" title="1">{
-                return time.Time{}
-        }</span>
+</span>
+        <span class="cov8" title="1">if c.cachedResult == nil </span>{
+                <span class="cov8" title="1">return time.Time{}
+</span>        }
 
         <span class="cov8" title="1">return c.expiresAt()</span>
 }
@@ -357,12 +357,12 @@ func (c *Cache) ExpiresAt() time.Time <span class="cov8" title="1">{
 // Return when the cache will expire, subtracting a grace period.
 // Should be called when already verified that c is not nil and c.cachedResult is not nil.
 // Assumes the caller holds at least a read lock.
-func (c *Cache) expiresAt() time.Time <span class="cov8" title="1">{
-        timestamp := c.cachedResult.TimestampAsTime()
+func (c *Cache) expiresAt() time.Time {
+        <span class="cov8" title="1">timestamp := c.cachedResult.TimestampAsTime()
         gracePeriod := time.Duration(c.cachedResult.Duration())*time.Millisecond + additionalGraceDuration
-        if gracePeriod &lt; minimumGraceDuration </span><span class="cov8" title="1">{
-                gracePeriod = minimumGraceDuration
-        }</span>
+        if gracePeriod &lt; minimumGraceDuration </span>{
+                <span class="cov8" title="1">gracePeriod = minimumGraceDuration
+</span>        }
         <span class="cov8" title="1">return timestamp.Add(c.cacheTime).Add(-1 * gracePeriod)</span>
 }
 </pre>
@@ -404,10 +404,10 @@ var speedtestMutex sync.Mutex
 //        cacheTime: Minimum time between speedtest runs
 //        instance: Name of this instance, provided as label on all metrics
 //        speedtest: Instance of speedtest to use for collection metrics
-func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest, instance string) (*Collector, error) <span class="cov8" title="1">{
-        if speedtest == nil </span><span class="cov8" title="1">{
-                return nil, ErrNoSpeedtest{}
-        }</span>
+func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest, instance string) (*Collector, error) {
+        <span class="cov8" title="1">if speedtest == nil </span>{
+                <span class="cov8" title="1">return nil, ErrNoSpeedtest{}
+</span>        }
         <span class="cov8" title="1">return &amp;Collector{
                 cache:     cache,
                 speedtest: speedtest,
@@ -416,28 +416,28 @@ func NewCollector(cache *cache.Cache, speedtest speedtest.Speedtest, instance st
 }
 
 // Implements the Describe function for prometheus.Collector
-func (c *Collector) Describe(ch chan&lt;- *prometheus.Desc) <span class="cov8" title="1">{
-        ch &lt;- jitterLatencyDesc
+func (c *Collector) Describe(ch chan&lt;- *prometheus.Desc) {
+        <span class="cov8" title="1">ch &lt;- jitterLatencyDesc
         ch &lt;- pingDesc
         ch &lt;- downloadSpeedDesc
         ch &lt;- uploadSpeedDesc
         ch &lt;- dataUsedDesc
         ch &lt;- durationDesc
         ch &lt;- upDesc
-}</span>
+</span>}
 
 // Concurrency safe function to get the latest result of the speedtest.
 // Will either return the cached result or run a new test.
-func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult <span class="cov8" title="1">{
+func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult {
         // Lock here to prevent running more than one Speedtest at a time, since they would affect each others results
-        speedtestMutex.Lock()
+        <span class="cov8" title="1">speedtestMutex.Lock()
         defer speedtestMutex.Unlock()
-
-        result, ok := c.cache.Read()
-        if ok </span><span class="cov8" title="1">{
-                slog.Debug("Cache has not expired, returning cached results", slog.String("expires", c.cache.ExpiresAt().Local().String()))
+</span>
+        <span class="cov8" title="1">result, ok := c.cache.Read()
+        if ok </span>{
+                <span class="cov8" title="1">slog.Debug("Cache has not expired, returning cached results", slog.String("expires", c.cache.ExpiresAt().Local().String()))
                 return result
-        }</span>
+</span>        }
         <span class="cov8" title="1">slog.Debug("Cache expired, running new Speedtest")
         result = c.speedtest.Speedtest()
         c.cache.Save(result)
@@ -445,12 +445,12 @@ func (c *Collector) getSpeedtestResult() *speedtest.SpeedtestResult <span class=
 }
 
 // Implements the Collect function for prometheus.Collector
-func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" title="1">{
-        slog.Debug("Starting collection of speedtest metrics")
+func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) {
+        <span class="cov8" title="1">slog.Debug("Starting collection of speedtest metrics")
         result := c.getSpeedtestResult()
         var up float64
-        if result.Success() </span><span class="cov8" title="1">{
-                up = 1
+        if result.Success() </span>{
+                <span class="cov8" title="1">up = 1
                 labelValues := []string{result.ClientIP(), result.ClientISP(), c.instance}
                 ch &lt;- prometheus.MustNewConstMetric(jitterLatencyDesc, prometheus.GaugeValue, result.JitterLatency(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(pingDesc, prometheus.GaugeValue, result.Ping(), labelValues...)
@@ -458,7 +458,7 @@ func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" t
                 ch &lt;- prometheus.MustNewConstMetric(uploadSpeedDesc, prometheus.GaugeValue, result.UploadSpeed(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(dataUsedDesc, prometheus.GaugeValue, result.DataUsed(), labelValues...)
                 ch &lt;- prometheus.MustNewConstMetric(durationDesc, prometheus.GaugeValue, float64(result.Duration()), labelValues...)
-        }</span>
+</span>        }
         <span class="cov8" title="1">ch &lt;- prometheus.MustNewConstMetric(upDesc, prometheus.GaugeValue, up)
         slog.Debug("Finished collection of speedtest metrics")</span>
 }
@@ -468,9 +468,9 @@ func (c *Collector) Collect(ch chan&lt;- prometheus.Metric) <span class="cov8" t
 
 type ErrNoSpeedtest struct{}
 
-func (e ErrNoSpeedtest) Error() string <span class="cov0" title="0">{
-        return "No valid speedtest provided"
-}</span>
+func (e ErrNoSpeedtest) Error() string {
+        <span class="cov0" title="0">return "No valid speedtest provided"
+</span>}
 </pre>
 		
 		<pre class="file" id="file4" style="display: none">package config
@@ -496,14 +496,14 @@ const (
 var logLevel *slog.LevelVar
 
 // Initialize the logger
-func init() <span class="cov8" title="1">{
-        logLevel = &amp;slog.LevelVar{}
+func init() {
+        <span class="cov8" title="1">logLevel = &amp;slog.LevelVar{}
         opts := slog.HandlerOptions{
                 Level: logLevel,
-        }
-        logger := slog.New(slog.NewTextHandler(os.Stdout, &amp;opts))
+</span>        }
+        <span class="cov8" title="1">logger := slog.New(slog.NewTextHandler(os.Stdout, &amp;opts))
         slog.SetDefault(logger)
-}</span>
+</span>}
 
 type Config struct {
         LogLevel     string        `yaml:"logLevel,omitempty"`
@@ -525,12 +525,12 @@ type RemoteConfig struct {
 }
 
 // Returns a Config with default values set
-func DefaultConfig() Config <span class="cov8" title="1">{
-        hostname, err := os.Hostname()
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Failed to retrieve hostname, using localhost instead", "err", err)
+func DefaultConfig() Config {
+        <span class="cov8" title="1">hostname, err := os.Hostname()
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Failed to retrieve hostname, using localhost instead", "err", err)
                 hostname = "localhost"
-        }</span>
+</span>        }
         <span class="cov8" title="1">return Config{
                 LogLevel:     DEFAULT_LOG_LEVEL,
                 Port:         DEFAULT_PORT,
@@ -540,7 +540,7 @@ func DefaultConfig() Config <span class="cov8" title="1">{
                 Remote: RemoteConfig{
                         JobName: DEFAULT_REMOTE_JOB_NAME,
                 },
-        }</span>
+</span>        }
 }
 
 // Loads config from file, returns error if config is invalid
@@ -549,63 +549,63 @@ func DefaultConfig() Config <span class="cov8" title="1">{
 //        path: Path to config file
 //        mode: Mode used, determines how the config will be validated and which values will be processed
 //        env: Determines if enviroment variables in the file will be expanded before decoding
-func LoadConfig(path string, env bool) (Config, error) <span class="cov8" title="1">{
-        c := DefaultConfig()
-
-        if path == "" </span><span class="cov8" title="1">{
-                _ = setLogLevel(DEFAULT_LOG_LEVEL)
+func LoadConfig(path string, env bool) (Config, error) {
+        <span class="cov8" title="1">c := DefaultConfig()
+</span>
+        <span class="cov8" title="1">if path == "" </span>{
+                <span class="cov8" title="1">_ = setLogLevel(DEFAULT_LOG_LEVEL)
                 return c, nil
-        }</span>
+</span>        }
 
         // #nosec G304: Local users can decide on the config file path freely.
         <span class="cov8" title="1">f, err := os.ReadFile(path)
-        if err != nil </span><span class="cov8" title="1">{
-                return Config{}, err
-        }</span>
+        if err != nil </span>{
+                <span class="cov8" title="1">return Config{}, err
+</span>        }
 
-        <span class="cov8" title="1">if env </span><span class="cov8" title="1">{
-                f = []byte(os.ExpandEnv(string(f)))
-        }</span>
+        <span class="cov8" title="1">if env </span>{
+                <span class="cov8" title="1">f = []byte(os.ExpandEnv(string(f)))
+</span>        }
 
         <span class="cov8" title="1">err = yaml.Unmarshal(f, &amp;c)
-        if err != nil </span><span class="cov8" title="1">{
-                return Config{}, err
-        }</span>
+        if err != nil </span>{
+                <span class="cov8" title="1">return Config{}, err
+</span>        }
 
         <span class="cov8" title="1">err = setLogLevel(c.LogLevel)
-        if err != nil </span><span class="cov0" title="0">{
-                return Config{}, err
-        }</span>
+        if err != nil </span>{
+                <span class="cov0" title="0">return Config{}, err
+</span>        }
 
-        <span class="cov8" title="1">if c.Remote.Instance == "" </span><span class="cov8" title="1">{
-                c.Remote.Instance = c.Instance
-        }</span>
+        <span class="cov8" title="1">if c.Remote.Instance == "" </span>{
+                <span class="cov8" title="1">c.Remote.Instance = c.Instance
+</span>        }
 
-        <span class="cov8" title="1">if c.Remote.Enable </span><span class="cov8" title="1">{
-                if c.Remote.URL == "" </span><span class="cov8" title="1">{
-                        return Config{}, promremote.ErrMissingEndpoint{}
-                }</span>
-                <span class="cov8" title="1">if c.Remote.Username != c.Remote.Password &amp;&amp; (c.Remote.Username == "" || c.Remote.Password == "") </span><span class="cov8" title="1">{
-                        return Config{}, promremote.ErrMissingAuthCredentials{}
-                }</span>
+        <span class="cov8" title="1">if c.Remote.Enable </span>{
+                <span class="cov8" title="1">if c.Remote.URL == "" </span>{
+                        <span class="cov8" title="1">return Config{}, promremote.ErrMissingEndpoint{}
+</span>                }
+                <span class="cov8" title="1">if c.Remote.Username != c.Remote.Password &amp;&amp; (c.Remote.Username == "" || c.Remote.Password == "") </span>{
+                        <span class="cov8" title="1">return Config{}, promremote.ErrMissingAuthCredentials{}
+</span>                }
         }
 
         <span class="cov8" title="1">return c, nil</span>
 }
 
 // Parse a given string and set the resulting log level
-func setLogLevel(level string) error <span class="cov8" title="1">{
-        switch strings.ToLower(level) </span>{
-        case "debug":<span class="cov8" title="1">
-                logLevel.Set(slog.LevelDebug)</span>
-        case "info":<span class="cov8" title="1">
-                logLevel.Set(slog.LevelInfo)</span>
-        case "warn":<span class="cov8" title="1">
-                logLevel.Set(slog.LevelWarn)</span>
-        case "error":<span class="cov8" title="1">
-                logLevel.Set(slog.LevelError)</span>
-        default:<span class="cov8" title="1">
-                return &amp;ErrUnknownLogLevel{level}</span>
+func setLogLevel(level string) error {
+        <span class="cov8" title="1">switch strings.ToLower(level) </span>{
+        case "debug":
+                <span class="cov8" title="1">logLevel.Set(slog.LevelDebug)</span>
+        case "info":
+                <span class="cov8" title="1">logLevel.Set(slog.LevelInfo)</span>
+        case "warn":
+                <span class="cov8" title="1">logLevel.Set(slog.LevelWarn)</span>
+        case "error":
+                <span class="cov8" title="1">logLevel.Set(slog.LevelError)</span>
+        default:
+                <span class="cov8" title="1">return &amp;ErrUnknownLogLevel{level}</span>
         }
         <span class="cov8" title="1">return nil</span>
 }
@@ -619,17 +619,17 @@ type ErrUnknownLogLevel struct {
         Level string
 }
 
-func (e *ErrUnknownLogLevel) Error() string <span class="cov0" title="0">{
-        return "Unknown log level " + e.Level
-}</span>
+func (e *ErrUnknownLogLevel) Error() string {
+        <span class="cov0" title="0">return "Unknown log level " + e.Level
+</span>}
 
 type ErrInvalidInterval struct {
         Interval time.Duration
 }
 
-func (e *ErrInvalidInterval) Error() string <span class="cov0" title="0">{
-        return "Interval is to short, needs to be at least 30s, current " + e.Interval.String()
-}</span>
+func (e *ErrInvalidInterval) Error() string {
+        <span class="cov0" title="0">return "Interval is to short, needs to be at least 30s, current " + e.Interval.String()
+</span>}
 </pre>
 		
 		<pre class="file" id="file6" style="display: none">package speedtest
@@ -642,28 +642,28 @@ type MockSpeedtest struct {
         Result   *SpeedtestResult
 }
 
-func (s *MockSpeedtest) Speedtest() *SpeedtestResult <span class="cov0" title="0">{
-        if s.Callback != nil </span><span class="cov0" title="0">{
-                s.Callback()
-        }</span>
-        <span class="cov0" title="0">if s.Fail </span><span class="cov0" title="0">{
-                return NewFailedSpeedtestResult()
-        }</span>
+func (s *MockSpeedtest) Speedtest() *SpeedtestResult {
+        <span class="cov0" title="0">if s.Callback != nil </span>{
+                <span class="cov0" title="0">s.Callback()
+</span>        }
+        <span class="cov0" title="0">if s.Fail </span>{
+                <span class="cov0" title="0">return NewFailedSpeedtestResult()
+</span>        }
         <span class="cov0" title="0">return s.Result</span>
 }
 
-func MockSpeedtestResult(timestamp int64) *SpeedtestResult <span class="cov8" title="1">{
-        result := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1", 251234*time.Millisecond)
+func MockSpeedtestResult(timestamp int64) *SpeedtestResult {
+        <span class="cov8" title="1">result := NewSpeedtestResult(0.5, 15, 876.53, 12.34, 950.3079, "1234", "example.org", "Foo Corp.", "127.0.0.1", 251234*time.Millisecond)
         result.timestamp = timestamp
         return result
-}</span>
+</span>}
 </pre>
 		
 		<pre class="file" id="file7" style="display: none">package speedtest
 
 import (
         "bytes"
-        "encoding/json"
+        "encoding/json/v2"
         "errors"
         "log/slog"
         "os/exec"
@@ -679,58 +679,58 @@ type SpeedtestCLI struct {
 // Arguments:
 //
 //        executable: name or full path to speedtest-cli binary
-func NewSpeedtestCLI(executable string) (*SpeedtestCLI, error) <span class="cov8" title="1">{
-        path, err := exec.LookPath(executable)
-        if errors.Is(err, exec.ErrDot) </span><span class="cov0" title="0">{
-                err = nil
-        }</span>
-        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
-                return nil, err
-        }</span>
+func NewSpeedtestCLI(executable string) (*SpeedtestCLI, error) {
+        <span class="cov8" title="1">path, err := exec.LookPath(executable)
+        if errors.Is(err, exec.ErrDot) </span>{
+                <span class="cov0" title="0">err = nil
+</span>        }
+        <span class="cov8" title="1">if err != nil </span>{
+                <span class="cov8" title="1">return nil, err
+</span>        }
         <span class="cov8" title="1">return &amp;SpeedtestCLI{
                 path: path,
         }, nil</span>
 }
 
 // Get path of the speedtest-cli binary
-func (s *SpeedtestCLI) Path() string <span class="cov8" title="1">{
-        return s.path
-}</span>
+func (s *SpeedtestCLI) Path() string {
+        <span class="cov8" title="1">return s.path
+</span>}
 
-var makeCmd = func(path string) *exec.Cmd <span class="cov0" title="0">{
-        return exec.Command(path, "--format=json-pretty", "--accept-license", "--accept-gdpr")
-}</span>
+var makeCmd = func(path string) *exec.Cmd {
+        <span class="cov0" title="0">return exec.Command(path, "--format=json-pretty", "--accept-license", "--accept-gdpr")
+</span>}
 
 // Execute the speedtest-cli binary and parse the result
-func (s *SpeedtestCLI) Speedtest() *SpeedtestResult <span class="cov8" title="1">{
-        start := time.Now()
-
-        cmd := makeCmd(s.Path())
+func (s *SpeedtestCLI) Speedtest() *SpeedtestResult {
+        <span class="cov8" title="1">start := time.Now()
+</span>
+        <span class="cov8" title="1">cmd := makeCmd(s.Path())
         var stdout, stderr bytes.Buffer
         cmd.Stdout = &amp;stdout
         cmd.Stderr = &amp;stderr
         err := cmd.Run()
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Could not execute speedtest", "error", err, slog.String("stdout", stdout.String()), slog.String("stderr", stderr.String()))
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Could not execute speedtest", "error", err, slog.String("stdout", stdout.String()), slog.String("stderr", stderr.String()))
                 return NewFailedSpeedtestResult()
-        }</span>
+</span>        }
 
         <span class="cov8" title="1">var out resultJSON
-        err = json.Unmarshal(stdout.Bytes(), &amp;out)
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Parsing JSON output from speedtest failed", "error", err, slog.String("output", stdout.String()))
+        err = json.UnmarshalRead(&amp;stdout, &amp;out)
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Parsing JSON output from speedtest failed", "error", err, slog.String("output", stdout.String()))
                 return NewFailedSpeedtestResult()
-        }</span>
+</span>        }
 
         <span class="cov8" title="1">downloadMbps := convertBytesToMbits(out.Download.Bandwidth)
         uploadMbps := convertBytesToMbits(out.Upload.Bandwidth)
         dataUsed := convertBytesToMB(out.Download.Bytes) + convertBytesToMB(out.Upload.Bytes)
-
-        res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP, time.Since(start))
-
-        printSuccessMessage(res)
-
-        return res</span>
+</span>
+        <span class="cov8" title="1">res := NewSpeedtestResult(out.Ping.Jitter, out.Ping.Latency, downloadMbps, uploadMbps, dataUsed, strconv.Itoa(out.Server.Id), out.Server.Host, out.ISP, out.Interface.ExternalIP, time.Since(start))
+</span>
+        <span class="cov8" title="1">printSuccessMessage(res)
+</span>
+        <span class="cov8" title="1">return res</span>
 }
 </pre>
 		
@@ -747,59 +747,60 @@ type SpeedtestGo struct {
 }
 
 // Create instance of Speedtest
-func NewSpeedtest() *SpeedtestGo <span class="cov8" title="1">{
-        return &amp;SpeedtestGo{}
-}</span>
+func NewSpeedtest() *SpeedtestGo {
+        <span class="cov8" title="1">return &amp;SpeedtestGo{}
+</span>}
 
 // Use the speedtest-go api to run a speedtest and parse the result
-func (s *SpeedtestGo) Speedtest() *SpeedtestResult <span class="cov8" title="1">{
-        start := time.Now()
-
-        client := speedtest.New()
-
-        serverList, err := client.FetchServers()
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Could not fetch server list", "error", err)
+func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
+        <span class="cov8" title="1">start := time.Now()
+</span>
+        <span class="cov8" title="1">client := speedtest.New()
+</span>
+        <span class="cov8" title="1">serverList, err := client.FetchServers()
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Could not fetch server list", "error", err)
                 return NewFailedSpeedtestResult()
-        }</span>
+</span>        }
         <span class="cov8" title="1">targets, err := serverList.FindServer([]int{})
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Failed to find closest server", "error", err)
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Failed to find closest server", "error", err)
                 return NewFailedSpeedtestResult()
-        }</span>
-        <span class="cov8" title="1">if len(targets) != 1 </span><span class="cov0" title="0">{
-                slog.Error("FindServer returned more than one server")
+</span>        }
+        <span class="cov8" title="1">if len(targets) != 1 </span>{
+                <span class="cov0" title="0">slog.Error("FindServer returned more than one server")
                 return NewFailedSpeedtestResult()
-        }</span>
+</span>        }
         <span class="cov8" title="1">server := targets[0]
-
-        err = server.TestAll()
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Failed to run speedtest", "error", err)
+</span>
+        <span class="cov8" title="1">err = server.TestAll()
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Failed to run speedtest", "error", err)
                 return NewFailedSpeedtestResult()
-        }</span>
+</span>        }
         <span class="cov8" title="1">user, err := client.FetchUserInfo()
-        if err != nil </span><span class="cov0" title="0">{
-                slog.Error("Failed to fetch client information", "error", err)
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Failed to fetch client information", "error", err)
                 return NewFailedSpeedtestResult()
-        }</span>
+</span>        }
 
         <span class="cov8" title="1">downloadMbps := convertBytesToMbits(server.DLSpeed)
         uploadMbps := convertBytesToMbits(server.ULSpeed)
         dataUsed := convertBytesToMB(server.Context.GetTotalDownload()) + convertBytesToMB(server.Context.GetTotalUpload())
-
-        res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP, time.Since(start))
-
-        printSuccessMessage(res)
-
-        return res</span>
+</span>
+        <span class="cov8" title="1">res := NewSpeedtestResult(float64(server.Jitter.Milliseconds()), float64(server.Latency.Milliseconds()), downloadMbps, uploadMbps, dataUsed, server.ID, server.Host, user.Isp, user.IP, time.Since(start))
+</span>
+        <span class="cov8" title="1">printSuccessMessage(res)
+</span>
+        <span class="cov8" title="1">return res</span>
 }
 </pre>
 		
 		<pre class="file" id="file9" style="display: none">package speedtest
 
 import (
-        "encoding/json"
+        "encoding/json/jsontext"
+        "encoding/json/v2"
         "time"
 )
 
@@ -823,16 +824,16 @@ type SpeedtestResult struct {
 }
 
 // Create a new SpeedtestResult for a failed speedtest.
-func NewFailedSpeedtestResult() *SpeedtestResult <span class="cov8" title="1">{
-        return &amp;SpeedtestResult{
+func NewFailedSpeedtestResult() *SpeedtestResult {
+        <span class="cov8" title="1">return &amp;SpeedtestResult{
                 success:   false,
                 timestamp: time.Now().UnixMilli(),
-        }
-}</span>
+</span>        }
+}
 
 // Create a new SpeedtestResult from a successful speedrun
-func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string, duration time.Duration) *SpeedtestResult <span class="cov8" title="1">{
-        return &amp;SpeedtestResult{
+func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUsed float64, serverID, serverHost, clientISP, clientIP string, duration time.Duration) *SpeedtestResult {
+        <span class="cov8" title="1">return &amp;SpeedtestResult{
                 jitterLatency: jitterLatency,
                 ping:          ping,
                 downloadSpeed: downloadSpeed,
@@ -845,74 +846,74 @@ func NewSpeedtestResult(jitterLatency, ping, downloadSpeed, uploadSpeed, dataUse
                 success:       true,
                 timestamp:     time.Now().UnixMilli(),
                 duration:      duration.Milliseconds(),
-        }
-}</span>
+</span>        }
+}
 
 // Jitter latency of ping in ms
-func (r *SpeedtestResult) JitterLatency() float64 <span class="cov8" title="1">{
-        return r.jitterLatency
-}</span>
+func (r *SpeedtestResult) JitterLatency() float64 {
+        <span class="cov8" title="1">return r.jitterLatency
+</span>}
 
 // Ping in ms
-func (r *SpeedtestResult) Ping() float64 <span class="cov8" title="1">{
-        return r.ping
-}</span>
+func (r *SpeedtestResult) Ping() float64 {
+        <span class="cov8" title="1">return r.ping
+</span>}
 
 // Download speed in Mbps
-func (r *SpeedtestResult) DownloadSpeed() float64 <span class="cov8" title="1">{
-        return r.downloadSpeed
-}</span>
+func (r *SpeedtestResult) DownloadSpeed() float64 {
+        <span class="cov8" title="1">return r.downloadSpeed
+</span>}
 
 // Upload speed in Mbps
-func (r *SpeedtestResult) UploadSpeed() float64 <span class="cov8" title="1">{
-        return r.uploadSpeed
-}</span>
+func (r *SpeedtestResult) UploadSpeed() float64 {
+        <span class="cov8" title="1">return r.uploadSpeed
+</span>}
 
 // Data usage of speedtest in MB
-func (r *SpeedtestResult) DataUsed() float64 <span class="cov8" title="1">{
-        return r.dataUsed
-}</span>
+func (r *SpeedtestResult) DataUsed() float64 {
+        <span class="cov8" title="1">return r.dataUsed
+</span>}
 
 // ID of the speedtest server used for the test
-func (r *SpeedtestResult) ServerID() string <span class="cov8" title="1">{
-        return r.serverID
-}</span>
+func (r *SpeedtestResult) ServerID() string {
+        <span class="cov8" title="1">return r.serverID
+</span>}
 
 // Name of the speedtest server used for the test
-func (r *SpeedtestResult) ServerHost() string <span class="cov8" title="1">{
-        return r.serverHost
-}</span>
+func (r *SpeedtestResult) ServerHost() string {
+        <span class="cov8" title="1">return r.serverHost
+</span>}
 
 // ISP name of the client/connection
-func (r *SpeedtestResult) ClientISP() string <span class="cov8" title="1">{
-        return r.clientISP
-}</span>
+func (r *SpeedtestResult) ClientISP() string {
+        <span class="cov8" title="1">return r.clientISP
+</span>}
 
 // Public IP of the client/connection
-func (r *SpeedtestResult) ClientIP() string <span class="cov8" title="1">{
-        return r.clientIP
-}</span>
+func (r *SpeedtestResult) ClientIP() string {
+        <span class="cov8" title="1">return r.clientIP
+</span>}
 
 // Indicates if the test was successful
-func (r *SpeedtestResult) Success() bool <span class="cov8" title="1">{
-        return r.success
-}</span>
+func (r *SpeedtestResult) Success() bool {
+        <span class="cov8" title="1">return r.success
+</span>}
 
 // Returns the timestamp of when the speedtest was run.
 // The timestamp is represented as milliseconds since the Unix epoch.
-func (r *SpeedtestResult) Timestamp() int64 <span class="cov8" title="1">{
-        return r.timestamp
-}</span>
+func (r *SpeedtestResult) Timestamp() int64 {
+        <span class="cov8" title="1">return r.timestamp
+</span>}
 
 // Returns the timestamp of when the speedtest was run as time.Time
-func (r *SpeedtestResult) TimestampAsTime() time.Time <span class="cov8" title="1">{
-        return time.UnixMilli(r.timestamp)
-}</span>
+func (r *SpeedtestResult) TimestampAsTime() time.Time {
+        <span class="cov8" title="1">return time.UnixMilli(r.timestamp)
+</span>}
 
 // Duration of the speedtest in milliseconds
-func (r *SpeedtestResult) Duration() int64 <span class="cov8" title="1">{
-        return r.duration
-}</span>
+func (r *SpeedtestResult) Duration() int64 {
+        <span class="cov8" title="1">return r.duration
+</span>}
 
 type speedtestResultJSONAlias struct {
         JitterLatency float64 `json:"jitter_latency_ms"`
@@ -931,8 +932,8 @@ type speedtestResultJSONAlias struct {
 
 // MarshalJSON implements json.Marshaler so the (unexported) fields of
 // SpeedtestResult can be serialized with meaningful JSON keys.
-func (r *SpeedtestResult) MarshalJSON() ([]byte, error) <span class="cov8" title="1">{
-        a := speedtestResultJSONAlias{
+func (r *SpeedtestResult) MarshalJSON() ([]byte, error) {
+        <span class="cov8" title="1">a := speedtestResultJSONAlias{
                 JitterLatency: r.jitterLatency,
                 Ping:          r.ping,
                 DownloadSpeed: r.downloadSpeed,
@@ -945,18 +946,18 @@ func (r *SpeedtestResult) MarshalJSON() ([]byte, error) <span class="cov8" title
                 Success:       r.success,
                 Timestamp:     r.timestamp,
                 Duration:      r.duration,
-        }
+</span>        }
 
-        return json.MarshalIndent(a, "", "  ")
-}</span>
+        <span class="cov8" title="1">return json.Marshal(a, jsontext.WithIndent("  "))
+</span>}
 
 // UnmarshalJSON implements json.Unmarshaler so JSON with the same keys used
 // in MarshalJSON can be decoded back into a SpeedtestResult with unexported fields.
-func (r *SpeedtestResult) UnmarshalJSON(data []byte) error <span class="cov8" title="1">{
-        var a speedtestResultJSONAlias
-        if err := json.Unmarshal(data, &amp;a); err != nil </span><span class="cov8" title="1">{
-                return err
-        }</span>
+func (r *SpeedtestResult) UnmarshalJSON(data []byte) error {
+        <span class="cov8" title="1">var a speedtestResultJSONAlias
+        if err := json.Unmarshal(data, &amp;a); err != nil </span>{
+                <span class="cov8" title="1">return err
+</span>        }
 
         <span class="cov8" title="1">r.jitterLatency = a.JitterLatency
         r.ping = a.Ping
@@ -970,8 +971,8 @@ func (r *SpeedtestResult) UnmarshalJSON(data []byte) error <span class="cov8" ti
         r.success = a.Success
         r.timestamp = a.Timestamp
         r.duration = a.Duration
-
-        return nil</span>
+</span>
+        <span class="cov8" title="1">return nil</span>
 }
 </pre>
 		
@@ -990,18 +991,18 @@ type Number interface {
 }
 
 // Convert unit bytes to megabits
-func convertBytesToMbits[T Number](bytes T) float64 <span class="cov8" title="1">{
-        return convertBytesToMB(bytes) * 8
-}</span>
+func convertBytesToMbits[T Number](bytes T) float64 {
+        <span class="cov8" title="1">return convertBytesToMB(bytes) * 8
+</span>}
 
 // Convert unit bytes to megabytes
-func convertBytesToMB[T Number](bytes T) float64 <span class="cov8" title="1">{
-        return float64(bytes) / speedtest.MB
-}</span>
+func convertBytesToMB[T Number](bytes T) float64 {
+        <span class="cov8" title="1">return float64(bytes) / speedtest.MB
+</span>}
 
 // Print the log message for a successful speedtest
-func printSuccessMessage(res *SpeedtestResult) <span class="cov8" title="1">{
-        slog.Info("Successfully ran speedtest",
+func printSuccessMessage(res *SpeedtestResult) {
+        <span class="cov8" title="1">slog.Info("Successfully ran speedtest",
                 slog.Float64("jitterLatency", res.JitterLatency()),
                 slog.Float64("ping", res.Ping()),
                 slog.Float64("downloadSpeed", res.DownloadSpeed()),
@@ -1013,7 +1014,7 @@ func printSuccessMessage(res *SpeedtestResult) <span class="cov8" title="1">{
                 slog.String("ip", res.ClientIP()),
                 slog.Duration("duration", time.Duration(res.Duration())*time.Millisecond),
         )
-}</span>
+</span>}
 </pre>
 		
 		<pre class="file" id="file11" style="display: none">package version
@@ -1026,27 +1027,27 @@ import (
 const Name = "speedtest-exporter"
 
 // Return a formated string containing the version, git commit and go version the app was compiled with.
-func Version() string <span class="cov8" title="1">{
-        var commit string
+func Version() string {
+        <span class="cov8" title="1">var commit string
         buildinfo, _ := debug.ReadBuildInfo()
-        for _, item := range buildinfo.Settings </span><span class="cov8" title="1">{
-                if item.Key == "vcs.revision" </span><span class="cov0" title="0">{
-                        commit = item.Value
+        for _, item := range buildinfo.Settings </span>{
+                <span class="cov8" title="1">if item.Key == "vcs.revision" </span>{
+                        <span class="cov0" title="0">commit = item.Value
                         break</span>
                 }
         }
-        <span class="cov8" title="1">if len(commit) &gt; 7 </span><span class="cov0" title="0">{
-                commit = commit[:7]
-        }</span> else<span class="cov8" title="1"> if commit == "" </span><span class="cov8" title="1">{
-                commit = "Unknown"
-        }</span>
+        <span class="cov8" title="1">if len(commit) &gt; 7 </span>{
+                <span class="cov0" title="0">commit = commit[:7]
+</span>        } else <span class="cov8" title="1">if commit == "" </span>{
+                <span class="cov8" title="1">commit = "Unknown"
+</span>        }
 
         <span class="cov8" title="1">result := Name + ":\n"
         result += "    Version: " + buildinfo.Main.Version + "\n"
         result += "    Commit:  " + commit + "\n"
         result += "    Go:      " + runtime.Version() + "\n"
-
-        return result</span>
+</span>
+        <span class="cov8" title="1">return result</span>
 }
 </pre>
 		
