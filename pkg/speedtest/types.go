@@ -1,7 +1,8 @@
 package speedtest
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"time"
 )
 
@@ -149,7 +150,7 @@ func (r *SpeedtestResult) MarshalJSON() ([]byte, error) {
 		Duration:      r.duration,
 	}
 
-	return json.MarshalIndent(a, "", "  ")
+	return json.Marshal(a, jsontext.WithIndent("  "))
 }
 
 // UnmarshalJSON implements json.Unmarshaler so JSON with the same keys used

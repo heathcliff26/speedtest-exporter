@@ -2,7 +2,7 @@ package speedtest
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"log/slog"
 	"os/exec"
@@ -55,7 +55,7 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult {
 	}
 
 	var out resultJSON
-	err = json.Unmarshal(stdout.Bytes(), &out)
+	err = json.UnmarshalRead(&stdout, &out)
 	if err != nil {
 		slog.Error("Parsing JSON output from speedtest failed", "error", err, slog.String("output", stdout.String()))
 		return NewFailedSpeedtestResult()
