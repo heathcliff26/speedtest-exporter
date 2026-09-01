@@ -206,3 +206,5 @@ dashboard:
   enabled: false
   # Namespace to deploy the dashboard ConfigMap into. Defaults to the release namespace when empty
   namespace: ""
+  # Annotations for dashboard config map
+  annotations: {}

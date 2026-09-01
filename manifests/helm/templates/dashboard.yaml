@@ -7,6 +7,10 @@ metadata:
   labels:
     grafana_dashboard: "1"
     {{- include "speedtest-exporter.labels" . | nindent 4 }}
+{{- with $.Values.dashboard.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
 data:
   speedtest-exporter.json: |-
 {{ .Files.Get "dashboard.json" | indent 4 }}
