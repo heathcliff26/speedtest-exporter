@@ -106,6 +106,22 @@ servicemonitor:
     # - action: labeldrop
     #   regex: pod
 
+# Define pod network policy
+networkPolicy:
+  enabled: false
+  # Ingress rules
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: metrics
+  # Egress rules
+  egress: []
+  # - ports:
+  #   - port: 443
+  #     protocol: TCP
+  # Override policy type
+  policyTypes: []
+
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false
