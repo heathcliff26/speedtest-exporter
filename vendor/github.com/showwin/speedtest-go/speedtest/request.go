@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net"
 	"net/http"
 	"net/url"
 	"path"
@@ -49,7 +50,7 @@ func (s *Server) MultiDownloadTestContext(ctx context.Context, servers Servers) 
 		dbg.Printf("Register Download Handler: %s\n", sp.URL)
 		td = server.Context.RegisterDownloadHandler(func() {
 			atomic.AddInt64(&requestTimes, 1)
-			if err := downloadRequest(_context, sp, 3); err != nil {
+			if err := sp.downloadRequest()(_context, sp, 3); err != nil {
 				atomic.AddInt64(&errorTimes, 1)
 			}
 		})
@@ -80,11 +81,12 @@ func (s *Server) MultiUploadTestContext(ctx context.Context, servers Servers) er
 		if server.ID == s.ID {
 			mainIDIndex = i
 		}
+		server.resolveUploadURL(ctx)
 		sp := server
 		dbg.Printf("Register Upload Handler: %s\n", sp.URL)
 		td = server.Context.RegisterUploadHandler(func() {
 			atomic.AddInt64(&requestTimes, 1)
-			if err := uploadRequest(_context, sp, 3); err != nil {
+			if err := sp.uploadRequest()(_context, sp, 3); err != nil {
 				atomic.AddInt64(&errorTimes, 1)
 			}
 		})
@@ -102,12 +104,12 @@ func (s *Server) MultiUploadTestContext(ctx context.Context, servers Servers) er
 
 // DownloadTest executes the test to measure download speed
 func (s *Server) DownloadTest() error {
-	return s.downloadTestContext(context.Background(), downloadRequest)
+	return s.downloadTestContext(context.Background(), s.downloadRequest())
 }
 
 // DownloadTestContext executes the test to measure download speed, observing the given context.
 func (s *Server) DownloadTestContext(ctx context.Context) error {
-	return s.downloadTestContext(ctx, downloadRequest)
+	return s.downloadTestContext(ctx, s.downloadRequest())
 }
 
 func (s *Server) downloadTestContext(ctx context.Context, downloadRequest downloadFunc) error {
@@ -133,12 +135,50 @@ func (s *Server) downloadTestContext(ctx context.Context, downloadRequest downlo
 
 // UploadTest executes the test to measure upload speed
 func (s *Server) UploadTest() error {
-	return s.uploadTestContext(context.Background(), uploadRequest)
+	return s.UploadTestContext(context.Background())
 }
 
 // UploadTestContext executes the test to measure upload speed, observing the given context.
 func (s *Server) UploadTestContext(ctx context.Context) error {
-	return s.uploadTestContext(ctx, uploadRequest)
+	s.resolveUploadURL(ctx)
+	return s.uploadTestContext(ctx, s.uploadRequest())
+}
+
+func (s *Server) resolveUploadURL(ctx context.Context) {
+	if s.Context.config.TestMode == TCPTest {
+		return
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, s.URL, nil)
+	if err != nil {
+		return
+	}
+	resp, err := s.Context.doer.Do(req)
+	if err != nil {
+		return
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.Request == nil || resp.Request.URL == nil {
+		return
+	}
+	resolvedURL := resp.Request.URL.String()
+	if resolvedURL != s.URL {
+		dbg.Printf("Resolved upload URL: %s -> %s\n", s.URL, resolvedURL)
+		s.URL = resolvedURL
+	}
+}
+
+func (s *Server) downloadRequest() downloadFunc {
+	if s.Context.config.TestMode == TCPTest {
+		return tcpDownloadRequest
+	}
+	return downloadRequest
+}
+
+func (s *Server) uploadRequest() uploadFunc {
+	if s.Context.config.TestMode == TCPTest {
+		return tcpUploadRequest
+	}
+	return uploadRequest
 }
 
 func (s *Server) uploadTestContext(ctx context.Context, uploadRequest uploadFunc) error {
@@ -211,6 +251,78 @@ func uploadRequest(ctx context.Context, s *Server, w int) error {
 	return nil
 }
 
+func tcpHost(s *Server) (string, error) {
+	host := s.Host
+	if host == "" {
+		u, err := url.Parse(s.URL)
+		if err != nil {
+			return "", err
+		}
+		if u.Hostname() == "" {
+			return "", errors.New("tcp server host is empty")
+		}
+		host = u.Host
+	}
+	if _, _, err := net.SplitHostPort(host); err == nil {
+		return host, nil
+	}
+	if strings.HasPrefix(host, "[") && strings.HasSuffix(host, "]") {
+		host = strings.TrimSuffix(strings.TrimPrefix(host, "["), "]")
+	}
+	return net.JoinHostPort(host, "8080"), nil
+}
+
+func tcpDownloadRequest(ctx context.Context, s *Server, w int) error {
+	host, err := tcpHost(s)
+	if err != nil {
+		return err
+	}
+	client, err := transport.NewClient(s.Context.tcpDialer)
+	if err != nil {
+		return err
+	}
+	if err = client.Connect(ctx, host); err != nil {
+		return err
+	}
+	defer func() { _ = client.Disconnect() }()
+	if _, err = client.VersionContext(ctx); err != nil {
+		return err
+	}
+	size := int64(dlSizes[w]) * 1000
+	return client.Download(ctx, size, s.Context.NewChunk().DownloadHandler)
+}
+
+func tcpUploadRequest(ctx context.Context, s *Server, w int) error {
+	host, err := tcpHost(s)
+	if err != nil {
+		return err
+	}
+	client, err := transport.NewClient(s.Context.tcpDialer)
+	if err != nil {
+		return err
+	}
+	if err = client.Connect(ctx, host); err != nil {
+		return err
+	}
+	defer func() { _ = client.Disconnect() }()
+	size := int64(ulSizes[w]) * 1000
+	payloadSize, err := transport.UploadPayloadSize(size)
+	if err != nil {
+		return err
+	}
+	dc := s.Context.NewChunk().UploadHandler(payloadSize)
+	acknowledged, err := client.Upload(ctx, size, dc)
+	if err != nil {
+		return err
+	}
+	overhead := size - payloadSize
+	if acknowledged < overhead {
+		return transport.ErrInvalidResponse
+	}
+	s.Context.AddTotalUpload(acknowledged - overhead)
+	return nil
+}
+
 // PingTest executes test to measure latency
 func (s *Server) PingTest(callback func(latency time.Duration)) error {
 	return s.PingTestContext(context.Background(), callback)
@@ -277,6 +389,7 @@ func (s *Server) TCPPing(
 	if err != nil {
 		return nil, err
 	}
+	defer func() { _ = client.Disconnect() }()
 	err = client.Connect(ctx, pingDst)
 	if err != nil {
 		return nil, err
