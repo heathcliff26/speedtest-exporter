@@ -4,10 +4,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
+	"text/tabwriter"
 	"time"
 
 	"github.com/heathcliff26/promremote/v2/promremote"
@@ -65,7 +67,30 @@ func createServer(port int, reg *prometheus.Registry) *http.Server {
 	}
 }
 
+// Fetch the available Ookla speedtest servers and print them to w as a table.
+func runListServers(w io.Writer) error {
+	servers, err := speedtest.ListServers()
+	if err != nil {
+		return err
+	}
+
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(tw, "ID\tSPONSOR\tCITY\tHOST\tCOUNTRY\tDISTANCE (km)\tLATENCY")
+	for _, s := range servers {
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%.1f\t%s\n", s.ID, s.Sponsor, s.Name, s.Host, s.Country, s.Distance, s.Latency)
+	}
+	return tw.Flush()
+}
+
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "list-servers" {
+		if err := runListServers(os.Stdout); err != nil {
+			slog.Error("Failed to fetch server list", "err", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	flag.Parse()
 
 	if showVersion {

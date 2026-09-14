@@ -58,6 +58,12 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 	return res
 }
 
+// Fetch the list of available Ookla speedtest servers, sorted by proximity.
+func ListServers() (speedtest.Servers, error) {
+	client := speedtest.New()
+	return client.FetchServers()
+}
+
 // Select a server from the list, optionally pinned to serverID. When serverID is 0, the closest server is
 // chosen automatically. Returns nil if no single server could be selected, having already logged the error.
 func pickServer(serverList speedtest.Servers, serverID int) *speedtest.Server {

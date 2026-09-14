@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -42,6 +44,19 @@ func TestCreateSpeedtest(t *testing.T) {
 		require.NoError(t, err, "Should create speedtest-cli")
 		assert.Equal(t, "*speedtest.SpeedtestGo", reflect.TypeOf(s).String())
 	})
+}
+
+func TestRunListServers(t *testing.T) {
+	var buf bytes.Buffer
+	err := runListServers(&buf)
+	require.NoError(t, err, "Should fetch and print server list")
+
+	lines := strings.Split(buf.String(), "\n")
+	require.Greater(t, len(lines), 1, "Should print a header and at least one server")
+	assert.Contains(t, lines[0], "ID")
+	assert.Contains(t, lines[0], "SPONSOR")
+	assert.Contains(t, lines[0], "CITY")
+	assert.Contains(t, lines[0], "HOST")
 }
 
 func TestServerWriteTimeout(t *testing.T) {

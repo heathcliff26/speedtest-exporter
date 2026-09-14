@@ -27,6 +27,19 @@ func TestRunSpeedtestForGo(t *testing.T) {
 	assert.NotEmpty(result.ClientIP())
 }
 
+func TestListServers(t *testing.T) {
+	servers, err := ListServers()
+	require.NoError(t, err, "Should fetch server list")
+	require.NotEmpty(t, servers, "Server list should not be empty")
+
+	assert := assert.New(t)
+	server := servers[0]
+	assert.NotEmpty(server.ID)
+	assert.NotEmpty(server.Name)
+	assert.NotEmpty(server.Host)
+	assert.NotEmpty(server.Sponsor)
+}
+
 func TestPickServer(t *testing.T) {
 	client := speedtest.New()
 	serverList, err := client.FetchServers()
