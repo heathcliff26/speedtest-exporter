@@ -14,6 +14,9 @@ cache: "5m"
 persistCache: true
 # When not empty, tells the exporter to use an external speedtest-cli binary instead of using go-native implementation
 speedtestCLI: ""
+# Optional Ookla server ID to pin the speedtest to instead of auto-selecting the lowest latency server. 0 means automatic.
+# Not recommended: automatic selection usually finds a better path. Go-native implementation only.
+serverID: 0
 # Configure remote_write behaviour
 remote:
   # Enable remote write, when false this part of the config will be ignored

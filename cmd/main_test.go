@@ -33,12 +33,12 @@ func TestServerRootHandler(t *testing.T) {
 
 func TestCreateSpeedtest(t *testing.T) {
 	t.Run("SpeedtestCLI", func(t *testing.T) {
-		s, err := createSpeedtest("../pkg/speedtest/testdata/speedtest-cli.sh")
+		s, err := createSpeedtest("../pkg/speedtest/testdata/speedtest-cli.sh", 0)
 		require.NoError(t, err, "Should create speedtest-cli")
 		assert.Equal(t, "*speedtest.SpeedtestCLI", reflect.TypeOf(s).String())
 	})
 	t.Run("Speedtest", func(t *testing.T) {
-		s, err := createSpeedtest("")
+		s, err := createSpeedtest("", 0)
 		require.NoError(t, err, "Should create speedtest-cli")
 		assert.Equal(t, "*speedtest.SpeedtestGo", reflect.TypeOf(s).String())
 	})
@@ -48,7 +48,7 @@ func TestServerWriteTimeout(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
 
-	s, err := createSpeedtest("")
+	s, err := createSpeedtest("", 0)
 	require.NoError(err, "Should create speedtest")
 	c, err := collector.NewCollector(nil, s, "testinstance") // Ensure we do not use a cache
 	require.NoError(err, "Should create collector")

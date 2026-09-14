@@ -2,17 +2,21 @@ package speedtest
 
 import (
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/showwin/speedtest-go/speedtest"
 )
 
 type SpeedtestGo struct {
+	serverID int
 }
 
-// Create instance of Speedtest
-func NewSpeedtest() *SpeedtestGo {
-	return &SpeedtestGo{}
+// Create instance of Speedtest. When serverID is 0, the closest server is chosen automatically.
+func NewSpeedtest(serverID int) *SpeedtestGo {
+	return &SpeedtestGo{
+		serverID: serverID,
+	}
 }
 
 // Use the speedtest-go api to run a speedtest and parse the result
@@ -26,16 +30,11 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 		slog.Error("Could not fetch server list", "error", err)
 		return NewFailedSpeedtestResult()
 	}
-	targets, err := serverList.FindServer([]int{})
-	if err != nil {
-		slog.Error("Failed to find closest server", "error", err)
+
+	server := pickServer(serverList, s.serverID)
+	if server == nil {
 		return NewFailedSpeedtestResult()
 	}
-	if len(targets) != 1 {
-		slog.Error("FindServer returned more than one server")
-		return NewFailedSpeedtestResult()
-	}
-	server := targets[0]
 
 	err = server.TestAll()
 	if err != nil {
@@ -57,4 +56,29 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 	printSuccessMessage(res)
 
 	return res
+}
+
+// Select a server from the list, optionally pinned to serverID. When serverID is 0, the closest server is
+// chosen automatically. Returns nil if no single server could be selected, having already logged the error.
+func pickServer(serverList speedtest.Servers, serverID int) *speedtest.Server {
+	ids := []int{}
+	if serverID != 0 {
+		ids = append(ids, serverID)
+	}
+	targets, err := serverList.FindServer(ids)
+	if err != nil {
+		slog.Error("Failed to find closest server", "error", err)
+		return nil
+	}
+	if len(targets) != 1 {
+		slog.Error("FindServer returned more than one server")
+		return nil
+	}
+	server := targets[0]
+
+	if serverID != 0 && server.ID != strconv.Itoa(serverID) {
+		slog.Warn("Pinned server not found in server list, falling back to automatic selection", "pinnedServerID", serverID, "selectedServerID", server.ID)
+	}
+
+	return server
 }

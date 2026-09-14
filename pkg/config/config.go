@@ -37,6 +37,7 @@ type Config struct {
 	Cache        time.Duration `yaml:"cache,omitempty"`
 	PersistCache bool          `yaml:"persistCache,omitempty"`
 	SpeedtestCLI string        `yaml:"speedtestCLI,omitempty"`
+	ServerID     int           `yaml:"serverID,omitempty"`
 	Remote       RemoteConfig  `yaml:"remote,omitempty"`
 }
 

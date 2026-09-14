@@ -19,6 +19,7 @@ func TestValidConfigs(t *testing.T) {
 		Cache:        time.Minute,
 		PersistCache: false,
 		SpeedtestCLI: "/path/to/speedtest",
+		ServerID:     12345,
 		Remote: RemoteConfig{
 			JobName:  DEFAULT_REMOTE_JOB_NAME,
 			Instance: "test",
