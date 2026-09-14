@@ -4,3 +4,4 @@ instance: "test"
 cache: "1m"
 persistCache: false
 speedtestCLI: "/path/to/speedtest"
+serverID: 12345

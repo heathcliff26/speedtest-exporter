@@ -40,10 +40,10 @@ func ServerRootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<html><body><h1>Welcome to speedtest-exporter</h1>Click <a href='/metrics'>here</a> to see metrics.</body></html>")
 }
 
-func createSpeedtest(path string) (speedtest.Speedtest, error) {
+func createSpeedtest(path string, serverID int) (speedtest.Speedtest, error) {
 	if path == "" {
 		slog.Debug("Using go-native speedtest implementation")
-		return speedtest.NewSpeedtest(), nil
+		return speedtest.NewSpeedtest(serverID), nil
 	} else {
 		slog.Debug("Using external speedtest-cli binary", "path", path)
 		return speedtest.NewSpeedtestCLI(path)
@@ -79,7 +79,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	s, err := createSpeedtest(cfg.SpeedtestCLI)
+	s, err := createSpeedtest(cfg.SpeedtestCLI, cfg.ServerID)
 	if err != nil {
 		slog.Error("Failed initialize speedtest", "err", err)
 		os.Exit(1)
