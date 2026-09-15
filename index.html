@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (25.0%)</option>
+				<option value="file0">github.com/heathcliff26/speedtest-exporter/cmd/main.go (29.6%)</option>
 				
 				<option value="file1">github.com/heathcliff26/speedtest-exporter/pkg/cache/cache.go (94.5%)</option>
 				
@@ -71,7 +71,7 @@
 				
 				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (88.7%)</option>
 				
-				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (83.3%)</option>
+				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (83.8%)</option>
 				
 				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (100.0%)</option>
 				
@@ -97,10 +97,12 @@ import (
         "errors"
         "flag"
         "fmt"
+        "io"
         "log/slog"
         "net/http"
         "os"
         "strconv"
+        "text/tabwriter"
         "time"
 
         "github.com/heathcliff26/promremote/v2/promremote"
@@ -158,7 +160,30 @@ func createServer(port int, reg *prometheus.Registry) *http.Server {
 </span>        }
 }
 
+// Fetch the available Ookla speedtest servers and print them to w as a table.
+func runListServers(w io.Writer) error {
+        <span class="cov8" title="1">servers, err := speedtest.ListServers()
+        if err != nil </span>{
+                <span class="cov0" title="0">return err
+</span>        }
+
+        <span class="cov8" title="1">tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+        fmt.Fprintln(tw, "ID\tSPONSOR\tCITY\tHOST\tCOUNTRY\tDISTANCE (km)\tLATENCY")
+        for _, s := range servers </span>{
+                <span class="cov8" title="1">fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%.1f\t%s\n", s.ID, s.Sponsor, s.Name, s.Host, s.Country, s.Distance, s.Latency)
+</span>        }
+        <span class="cov8" title="1">return tw.Flush()</span>
+}
+
 func main() {
+        <span class="cov0" title="0">if len(os.Args) &gt; 1 &amp;&amp; os.Args[1] == "list-servers" </span>{
+                <span class="cov0" title="0">if err := runListServers(os.Stdout); err != nil </span>{
+                        <span class="cov0" title="0">slog.Error("Failed to fetch server list", "err", err)
+                        os.Exit(1)
+</span>                }
+                <span class="cov0" title="0">return</span>
+        }
+
         <span class="cov0" title="0">flag.Parse()
 </span>
         <span class="cov0" title="0">if showVersion </span>{
@@ -794,6 +819,12 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
 </span>
         <span class="cov8" title="1">return res</span>
 }
+
+// Fetch the list of available Ookla speedtest servers, sorted by proximity.
+func ListServers() (speedtest.Servers, error) {
+        <span class="cov8" title="1">client := speedtest.New()
+        return client.FetchServers()
+</span>}
 
 // Select a server from the list, optionally pinned to serverID. When serverID is 0, the closest server is
 // chosen automatically. Returns nil if no single server could be selected, having already logged the error.
