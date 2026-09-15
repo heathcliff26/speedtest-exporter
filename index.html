@@ -71,7 +71,7 @@
 				
 				<option value="file7">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-cli.go (88.7%)</option>
 				
-				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (82.8%)</option>
+				<option value="file8">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/speedtest-go.go (83.3%)</option>
 				
 				<option value="file9">github.com/heathcliff26/speedtest-exporter/pkg/speedtest/types.go (100.0%)</option>
 				
@@ -133,10 +133,10 @@ func ServerRootHandler(w http.ResponseWriter, r *http.Request) {
         <span class="cov8" title="1">fmt.Fprint(w, "&lt;html&gt;&lt;body&gt;&lt;h1&gt;Welcome to speedtest-exporter&lt;/h1&gt;Click &lt;a href='/metrics'&gt;here&lt;/a&gt; to see metrics.&lt;/body&gt;&lt;/html&gt;")
 </span>}
 
-func createSpeedtest(path string) (speedtest.Speedtest, error) {
+func createSpeedtest(path string, serverID int) (speedtest.Speedtest, error) {
         <span class="cov8" title="1">if path == "" </span>{
                 <span class="cov8" title="1">slog.Debug("Using go-native speedtest implementation")
-                return speedtest.NewSpeedtest(), nil
+                return speedtest.NewSpeedtest(serverID), nil
 </span>        } else {
                 <span class="cov8" title="1">slog.Debug("Using external speedtest-cli binary", "path", path)
                 return speedtest.NewSpeedtestCLI(path)
@@ -172,7 +172,7 @@ func main() {
                 os.Exit(1)
 </span>        }
 
-        <span class="cov0" title="0">s, err := createSpeedtest(cfg.SpeedtestCLI)
+        <span class="cov0" title="0">s, err := createSpeedtest(cfg.SpeedtestCLI, cfg.ServerID)
         if err != nil </span>{
                 <span class="cov0" title="0">slog.Error("Failed initialize speedtest", "err", err)
                 os.Exit(1)
@@ -512,6 +512,7 @@ type Config struct {
         Cache        time.Duration `yaml:"cache,omitempty"`
         PersistCache bool          `yaml:"persistCache,omitempty"`
         SpeedtestCLI string        `yaml:"speedtestCLI,omitempty"`
+        ServerID     int           `yaml:"serverID,omitempty"`
         Remote       RemoteConfig  `yaml:"remote,omitempty"`
 }
 
@@ -738,18 +739,22 @@ func (s *SpeedtestCLI) Speedtest() *SpeedtestResult {
 
 import (
         "log/slog"
+        "strconv"
         "time"
 
         "github.com/showwin/speedtest-go/speedtest"
 )
 
 type SpeedtestGo struct {
+        serverID int
 }
 
-// Create instance of Speedtest
-func NewSpeedtest() *SpeedtestGo {
-        <span class="cov8" title="1">return &amp;SpeedtestGo{}
-</span>}
+// Create instance of Speedtest. When serverID is 0, the closest server is chosen automatically.
+func NewSpeedtest(serverID int) *SpeedtestGo {
+        <span class="cov8" title="1">return &amp;SpeedtestGo{
+                serverID: serverID,
+</span>        }
+}
 
 // Use the speedtest-go api to run a speedtest and parse the result
 func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
@@ -762,17 +767,12 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
                 <span class="cov0" title="0">slog.Error("Could not fetch server list", "error", err)
                 return NewFailedSpeedtestResult()
 </span>        }
-        <span class="cov8" title="1">targets, err := serverList.FindServer([]int{})
-        if err != nil </span>{
-                <span class="cov0" title="0">slog.Error("Failed to find closest server", "error", err)
-                return NewFailedSpeedtestResult()
+
+        <span class="cov8" title="1">server := pickServer(serverList, s.serverID)
+        if server == nil </span>{
+                <span class="cov0" title="0">return NewFailedSpeedtestResult()
 </span>        }
-        <span class="cov8" title="1">if len(targets) != 1 </span>{
-                <span class="cov0" title="0">slog.Error("FindServer returned more than one server")
-                return NewFailedSpeedtestResult()
-</span>        }
-        <span class="cov8" title="1">server := targets[0]
-</span>
+
         <span class="cov8" title="1">err = server.TestAll()
         if err != nil </span>{
                 <span class="cov0" title="0">slog.Error("Failed to run speedtest", "error", err)
@@ -793,6 +793,31 @@ func (s *SpeedtestGo) Speedtest() *SpeedtestResult {
         <span class="cov8" title="1">printSuccessMessage(res)
 </span>
         <span class="cov8" title="1">return res</span>
+}
+
+// Select a server from the list, optionally pinned to serverID. When serverID is 0, the closest server is
+// chosen automatically. Returns nil if no single server could be selected, having already logged the error.
+func pickServer(serverList speedtest.Servers, serverID int) *speedtest.Server {
+        <span class="cov8" title="1">ids := []int{}
+        if serverID != 0 </span>{
+                <span class="cov8" title="1">ids = append(ids, serverID)
+</span>        }
+        <span class="cov8" title="1">targets, err := serverList.FindServer(ids)
+        if err != nil </span>{
+                <span class="cov0" title="0">slog.Error("Failed to find closest server", "error", err)
+                return nil
+</span>        }
+        <span class="cov8" title="1">if len(targets) != 1 </span>{
+                <span class="cov0" title="0">slog.Error("FindServer returned more than one server")
+                return nil
+</span>        }
+        <span class="cov8" title="1">server := targets[0]
+</span>
+        <span class="cov8" title="1">if serverID != 0 &amp;&amp; server.ID != strconv.Itoa(serverID) </span>{
+                <span class="cov8" title="1">slog.Warn("Pinned server not found in server list, falling back to automatic selection", "pinnedServerID", serverID, "selectedServerID", server.ID)
+</span>        }
+
+        <span class="cov8" title="1">return server</span>
 }
 </pre>
 		
