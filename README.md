@@ -50,24 +50,38 @@ There are different flavors of the image:
 
 ## Usage
 
+**Simple:**
+
 To run the image with default settings simply use:
 ```
 podman run -d -p 8080:8080 ghcr.io/heathcliff26/speedtest-exporter:latest
 ```
 You can then view your metrics under `http://localhost:8080/metrics`.
 
+**With Cache:**
+
 By default the last result will be cached to disk. To persist this between container runs, mount a volume at `/cache`:
 ```
 podman run -d -p 8080:8080 -v speedtest-cache:/cache ghcr.io/heathcliff26/speedtest-exporter:latest
 ```
 
+**With Config:**
+
+To use a custom config, mount a config file at `/config/config.yaml`:
+```
+podman run -d -p 8080:8080 -v /path/to/config.yaml:/config/config.yaml ghcr.io/heathcliff26/speedtest-exporter:latest
+```
+Should the config be mounted under a different path, this needs to be specified with `-config`.
+
+**Pin server:**
+
 By default the exporter automatically picks the lowest latency server on each run. To pin a specific server, you can list nearby Ookla servers sorted by proximity with:
 ```
-speedtest-exporter list-servers
+podman run -t --rm ghcr.io/heathcliff26/speedtest-exporter:latest list-servers
 ```
 And set the desired server's ID as `serverID` in your config.
 
-**Note:** Pinning is not recommended unless you have a specific reason - automatic selection usually finds a better path, and a pinned server can be retired or degrade over time.
+*Note:* Pinning is not recommended unless you have a specific reason - automatic selection usually finds a better path, and a pinned server can be retired or degrade over time.
 
 ### Kubernetes
 
