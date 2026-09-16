@@ -63,7 +63,7 @@
 				
 				<option value="file3">github.com/heathcliff26/speedtest-exporter/pkg/collector/errors.go (0.0%)</option>
 				
-				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (93.3%)</option>
+				<option value="file4">github.com/heathcliff26/speedtest-exporter/pkg/config/config.go (96.7%)</option>
 				
 				<option value="file5">github.com/heathcliff26/speedtest-exporter/pkg/config/errors.go (0.0%)</option>
 				
@@ -511,6 +511,9 @@ import (
 )
 
 const (
+        DEFAULT_CONFIG_PATH           = "/etc/speedtest-exporter/config.yaml"
+        DEFAULT_CONFIG_PATH_CONTAINER = "/config/config.yaml"
+
         DEFAULT_LOG_LEVEL       = "info"
         DEFAULT_PORT            = 8080
         DEFAULT_CACHE           = 5 * time.Minute
@@ -569,6 +572,18 @@ func DefaultConfig() Config {
 </span>        }
 }
 
+// Return the path to the config file
+func getPath(path string) string {
+        <span class="cov8" title="1">if path != "" </span>{
+                <span class="cov8" title="1">return path
+</span>        }
+        <span class="cov8" title="1">if _, ok := os.LookupEnv("container"); ok </span>{
+                <span class="cov8" title="1">return DEFAULT_CONFIG_PATH_CONTAINER
+</span>        } else {
+                <span class="cov8" title="1">return DEFAULT_CONFIG_PATH
+</span>        }
+}
+
 // Loads config from file, returns error if config is invalid
 // Arguments:
 //
@@ -576,31 +591,14 @@ func DefaultConfig() Config {
 //        mode: Mode used, determines how the config will be validated and which values will be processed
 //        env: Determines if enviroment variables in the file will be expanded before decoding
 func LoadConfig(path string, env bool) (Config, error) {
-        <span class="cov8" title="1">c := DefaultConfig()
-</span>
-        <span class="cov8" title="1">if path == "" </span>{
-                <span class="cov8" title="1">_ = setLogLevel(DEFAULT_LOG_LEVEL)
-                return c, nil
-</span>        }
-
-        // #nosec G304: Local users can decide on the config file path freely.
-        <span class="cov8" title="1">f, err := os.ReadFile(path)
-        if err != nil </span>{
-                <span class="cov8" title="1">return Config{}, err
-</span>        }
-
-        <span class="cov8" title="1">if env </span>{
-                <span class="cov8" title="1">f = []byte(os.ExpandEnv(string(f)))
-</span>        }
-
-        <span class="cov8" title="1">err = yaml.Unmarshal(f, &amp;c)
+        <span class="cov8" title="1">c, err := loadConfigFile(path, env)
         if err != nil </span>{
                 <span class="cov8" title="1">return Config{}, err
 </span>        }
 
         <span class="cov8" title="1">err = setLogLevel(c.LogLevel)
         if err != nil </span>{
-                <span class="cov0" title="0">return Config{}, err
+                <span class="cov8" title="1">return Config{}, err
 </span>        }
 
         <span class="cov8" title="1">if c.Remote.Instance == "" </span>{
@@ -615,6 +613,32 @@ func LoadConfig(path string, env bool) (Config, error) {
                         <span class="cov8" title="1">return Config{}, promremote.ErrMissingAuthCredentials{}
 </span>                }
         }
+
+        <span class="cov8" title="1">return c, nil</span>
+}
+
+func loadConfigFile(path string, env bool) (Config, error) {
+        <span class="cov8" title="1">c := DefaultConfig()
+</span>
+        <span class="cov8" title="1">p := getPath(path)
+</span>
+        // #nosec G304 -- Local users can decide on their file path themselves.
+        <span class="cov8" title="1">f, err := os.ReadFile(p)
+        if path == "" &amp;&amp; os.IsNotExist(err) </span>{
+                <span class="cov8" title="1">slog.Info("No config file specified and default file does not exist, falling back to default values.", slog.String("default-path", p))
+                return c, nil
+</span>        } else <span class="cov8" title="1">if err != nil </span>{
+                <span class="cov8" title="1">return Config{}, err
+</span>        }
+
+        <span class="cov8" title="1">if env </span>{
+                <span class="cov8" title="1">f = []byte(os.ExpandEnv(string(f)))
+</span>        }
+
+        <span class="cov8" title="1">err = yaml.Unmarshal(f, &amp;c)
+        if err != nil </span>{
+                <span class="cov8" title="1">return Config{}, err
+</span>        }
 
         <span class="cov8" title="1">return c, nil</span>
 }
