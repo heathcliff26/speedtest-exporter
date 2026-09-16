@@ -12,6 +12,8 @@ import (
 )
 
 func TestValidConfigs(t *testing.T) {
+	defaultConfig := DefaultConfig()
+	defaultConfig.Remote.Instance = defaultConfig.Instance
 	c1 := Config{
 		LogLevel:     "warn",
 		Port:         80,
@@ -60,7 +62,7 @@ func TestValidConfigs(t *testing.T) {
 		{
 			Name:   "EmptyConfig",
 			Path:   "",
-			Result: DefaultConfig(),
+			Result: defaultConfig,
 		},
 		{
 			Name:   "Config1",
@@ -119,6 +121,11 @@ func TestInvalidConfig(t *testing.T) {
 			Path:  "testdata/invalid-config-3.yaml",
 			Error: "promremote.ErrMissingAuthCredentials",
 		},
+		{
+			Name:  "InvalidLogLevel",
+			Path:  "testdata/invalid-loglevel.yaml",
+			Error: "*config.ErrUnknownLogLevel",
+		},
 	}
 
 	for _, tCase := range tMatrix {
@@ -154,6 +161,38 @@ func TestEnvSubstitution(t *testing.T) {
 
 	assert.NoError(err)
 	assert.Equal(c, res)
+}
+
+func TestGetPath(t *testing.T) {
+	tMatrix := []struct {
+		Name, Path string
+		Container  bool
+		Result     string
+	}{
+		{
+			Name:   "GivenPath",
+			Path:   "testpath",
+			Result: "testpath",
+		},
+		{
+			Name:   "Default",
+			Result: DEFAULT_CONFIG_PATH,
+		},
+		{
+			Name:      "Container",
+			Container: true,
+			Result:    DEFAULT_CONFIG_PATH_CONTAINER,
+		},
+	}
+
+	for _, tCase := range tMatrix {
+		t.Run(tCase.Name, func(t *testing.T) {
+			if tCase.Container {
+				t.Setenv("container", "podman")
+			}
+			assert.Equal(t, tCase.Result, getPath(tCase.Path), "Should return the correct path")
+		})
+	}
 }
 
 func TestSetLogLevel(t *testing.T) {

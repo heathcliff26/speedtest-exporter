@@ -11,6 +11,9 @@ import (
 )
 
 const (
+	DEFAULT_CONFIG_PATH           = "/etc/speedtest-exporter/config.yaml"
+	DEFAULT_CONFIG_PATH_CONTAINER = "/config/config.yaml"
+
 	DEFAULT_LOG_LEVEL       = "info"
 	DEFAULT_PORT            = 8080
 	DEFAULT_CACHE           = 5 * time.Minute
@@ -69,6 +72,18 @@ func DefaultConfig() Config {
 	}
 }
 
+// Return the path to the config file
+func getPath(path string) string {
+	if path != "" {
+		return path
+	}
+	if _, ok := os.LookupEnv("container"); ok {
+		return DEFAULT_CONFIG_PATH_CONTAINER
+	} else {
+		return DEFAULT_CONFIG_PATH
+	}
+}
+
 // Loads config from file, returns error if config is invalid
 // Arguments:
 //
@@ -76,24 +91,7 @@ func DefaultConfig() Config {
 //	mode: Mode used, determines how the config will be validated and which values will be processed
 //	env: Determines if enviroment variables in the file will be expanded before decoding
 func LoadConfig(path string, env bool) (Config, error) {
-	c := DefaultConfig()
-
-	if path == "" {
-		_ = setLogLevel(DEFAULT_LOG_LEVEL)
-		return c, nil
-	}
-
-	// #nosec G304: Local users can decide on the config file path freely.
-	f, err := os.ReadFile(path)
-	if err != nil {
-		return Config{}, err
-	}
-
-	if env {
-		f = []byte(os.ExpandEnv(string(f)))
-	}
-
-	err = yaml.Unmarshal(f, &c)
+	c, err := loadConfigFile(path, env)
 	if err != nil {
 		return Config{}, err
 	}
@@ -114,6 +112,32 @@ func LoadConfig(path string, env bool) (Config, error) {
 		if c.Remote.Username != c.Remote.Password && (c.Remote.Username == "" || c.Remote.Password == "") {
 			return Config{}, promremote.ErrMissingAuthCredentials{}
 		}
+	}
+
+	return c, nil
+}
+
+func loadConfigFile(path string, env bool) (Config, error) {
+	c := DefaultConfig()
+
+	p := getPath(path)
+
+	// #nosec G304 -- Local users can decide on their file path themselves.
+	f, err := os.ReadFile(p)
+	if path == "" && os.IsNotExist(err) {
+		slog.Info("No config file specified and default file does not exist, falling back to default values.", slog.String("default-path", p))
+		return c, nil
+	} else if err != nil {
+		return Config{}, err
+	}
+
+	if env {
+		f = []byte(os.ExpandEnv(string(f)))
+	}
+
+	err = yaml.Unmarshal(f, &c)
+	if err != nil {
+		return Config{}, err
 	}
 
 	return c, nil
