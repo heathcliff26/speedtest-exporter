@@ -1,5 +1,5 @@
 ---
-name: "Generate go test cover report"
+name: "Coverprofiles"
 
 on:
   workflow_dispatch:
@@ -10,6 +10,5 @@ jobs:
   generate-reports:
     uses: heathcliff26/ci/.github/workflows/golang-testcover-report.yaml@main
     secrets: inherit
-    permissions: {}
-    with:
-      coveralls: true
+    permissions:
+      contents: write
