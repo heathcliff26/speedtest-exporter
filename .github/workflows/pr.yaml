@@ -1,6 +1,5 @@
-
 ---
-name: "Labels Check"
+name: "PR Check"
 
 on:
   pull_request:
@@ -9,6 +8,7 @@ on:
       - opened
       - synchronize
       - reopened
+      - edited
       - labeled
       - unlabeled
 
@@ -17,3 +17,9 @@ jobs:
     uses: heathcliff26/ci/.github/workflows/label-check.yaml@main
     permissions:
       pull-requests: read
+
+  commit-check:
+    uses: heathcliff26/ci/.github/workflows/commit-check.yaml@main
+    permissions:
+      contents: read
+      pull-requests: write
