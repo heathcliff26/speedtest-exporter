@@ -18,6 +18,12 @@ jobs:
     permissions:
       pull-requests: read
 
+  set-labels:
+    uses: heathcliff26/ci/.github/workflows/label-set.yaml@main
+    permissions:
+      contents: read
+      pull-requests: write
+
   commit-check:
     uses: heathcliff26/ci/.github/workflows/commit-check.yaml@main
     permissions:
