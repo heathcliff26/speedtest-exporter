@@ -7,17 +7,26 @@ changelog:
     - title: "⚠️ Breaking Changes"
       labels:
         - "breaking-change"
-        - "type/major"
     - title: "🚀 Features"
       labels:
         - "enhancement"
         - "feature"
+    - title: "🔒 Security"
+      labels:
+        - "security"
     - title: "🐛 Bug Fixes"
       labels:
         - "bug"
-    - title: "Documentation"
+        - "performance"
+    - title: "📝 Documentation"
       labels:
         - "documentation"
+    - title: "🔧 Maintenance"
+      labels:
+        - "refactor"
+        - "style"
+        - "test"
     - title: Other Changes
       labels:
+        - "chore"
         - "*"
