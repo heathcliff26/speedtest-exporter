@@ -226,7 +226,7 @@ func (c *client) Run(interval time.Duration) error {
 				slog.Error("Failed to collect metrics for remote_write", "err", err)
 			}
 
-			stats, err := c.remoteAPI.Write(ctx, remote.WriteV2MessageType, req)
+			stats, err := c.remoteAPI.Write(ctx, remote.WriteV2MessageType, remote.WriteModeNone, req)
 			if err != nil {
 				slog.Error("Failed to send metrics to remote endpoint", "err", err)
 			} else {

@@ -4,10 +4,10 @@ github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.3.0
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/heathcliff26/promremote/v2 v2.0.7
+# github.com/heathcliff26/promremote/v2 v2.0.8
 ## explicit; go 1.27.0
 github.com/heathcliff26/promremote/v2/promremote
-# github.com/heathcliff26/simple-fileserver v1.3.6
+# github.com/heathcliff26/simple-fileserver v1.4.0
 ## explicit; go 1.27.0
 github.com/heathcliff26/simple-fileserver/pkg/middleware
 # github.com/klauspost/compress v1.20.1
@@ -27,7 +27,7 @@ github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
 github.com/prometheus/client_golang/prometheus/promhttp/internal
-# github.com/prometheus/client_golang/exp v0.0.0-20261008142031-a4329cfb379b
+# github.com/prometheus/client_golang/exp v0.0.0-20261105144753-f54d392372dc
 ## explicit; go 1.26.0
 github.com/prometheus/client_golang/exp/api/remote
 github.com/prometheus/client_golang/exp/api/remote/genproto/v2
@@ -71,7 +71,7 @@ go.yaml.in/yaml/v4/plugin/errorformat/v3
 go.yaml.in/yaml/v4/plugin/errorformat/v4
 go.yaml.in/yaml/v4/plugin/loaderlimits
 go.yaml.in/yaml/v4/plugin/mergekey
-# golang.org/x/exp v0.0.0-20261011100332-faecfb24eb49
+# golang.org/x/exp v0.0.0-20261112173441-d10d3b464990
 ## explicit; go 1.26.0
 golang.org/x/exp/constraints
 # golang.org/x/sys v0.48.0
