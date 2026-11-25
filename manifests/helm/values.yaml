@@ -37,6 +37,8 @@ config:
     password: ""
 
 cache:
+  # Name of an existing PersistentVolume to use. Takes priority over storageClassName
+  volumeName: ""
   # Storage class for the persistent volume claim. Leave empty to use default storage class
   storageClassName: ""
   # Size of the persistent volume claim
