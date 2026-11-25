@@ -9,8 +9,13 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  {{- if .Values.cache.volumeName }}
+  volumeName: {{ .Values.cache.volumeName }}
+  {{- end }}
   {{- if .Values.cache.storageClassName }}
   storageClassName: {{ .Values.cache.storageClassName }}
+  {{- else if .Values.cache.volumeName }}
+  storageClassName: ""
   {{- end }}
   resources:
     requests:
